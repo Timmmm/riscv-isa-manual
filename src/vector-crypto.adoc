@@ -2749,24 +2749,8 @@ the rotate amount and using the immediate form of rotate right instruction (i.e.
 Operation::
 [source,sail]
 --
-function clause execute (VROL_VV(vs2, vs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=SEW, i,
-      get_velem(vs2, i) <<< (get_velem(vs1, i) & (SEW-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
-function clause execute (VROL_VX(vs2, rs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=SEW, i,
-      get_velem(vs2, i) <<< (X(rs1) & (SEW-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
+include::sail:execute[clause="VROL_VV(_, _, _, _)"]
+include::sail:execute[clause="VROL_VX(_, _, _)"]
 --
 
 Included in::
@@ -2873,32 +2857,9 @@ bits are ignored.
 Operation::
 [source,sail]
 --
-function clause execute (VROR_VV(vs2, vs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=SEW, i,
-      get_velem(vs2, i) >>> (get_velem(vs1, i) & (SEW-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
-function clause execute (VROR_VX(vs2, rs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=SEW, i,
-      get_velem(vs2, i) >>> (X(rs1) & (SEW-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
-function clause execute (VROR_VI(vs2, uimm[5:0], vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=SEW, i,
-      get_velem(vs2, i) >>> (uimm[5:0] & (SEW-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
+include::sail:execute[clause="VROR_VV(_, _, _, _)"]
+include::sail:execute[clause="VROR_VX(_, _, _, _)"]
+include::sail:execute[clause="VROR_VI(_, _, _, _)"]
 --
 
 Included in::
@@ -4120,32 +4081,9 @@ bits are ignored.
 Operation::
 [source,sail]
 --
-function clause execute (VWSLL_VV(vs2, vs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=2*SEW, i,
-      get_velem(vs2, i) << (get_velem(vs1, i) & ((2*SEW)-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
-function clause execute (VWSLL_VX(vs2, rs1, vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=2*SEW, i,
-      get_velem(vs2, i) << (X(rs1) & ((2*SEW)-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
-
-function clause execute (VWSLL_VI(vs2, uimm[4:0], vd)) = {
-  foreach (i from vstart to vl - 1) {
-    set_velem(vd, EEW=2*SEW, i,
-      get_velem(vs2, i) << (uimm[4:0] & ((2*SEW)-1))
-    )
-  }
-  RETIRE_SUCCESS
-}
+include::sail:execute[clause="VWSLL_VV(_, _, _, _)"]
+include::sail:execute[clause="VWSLL_VX(_, _, _, _)"]
+include::sail:execute[clause="VWSLL_VI(_, _, _, _)"]
 --
 
 Included in::
