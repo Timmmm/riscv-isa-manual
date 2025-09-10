@@ -1684,36 +1684,8 @@ behavior to be fully defined for all values of `uimm[4:0]` with minimal extra lo
 
 
 Operation::
-[source,Sail]
---
-function clause execute (VAESKF1(rnd, vd, vs2)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
- // project out-of-range immediates onto in-range values
- if( (unsigned(rnd[3:0]) > 10) | (rnd[3:0] = 0)) then rnd[3] = ~rnd[3]
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  let r : bits(4) = rnd-1;
-
-  foreach (i from eg_start to eg_len-1) {
-      let CurrentRoundKey[3:0]  : bits(128)  = get_velem(vs2, EGW=128, i);
-      let w[0] : bits(32) = aes_subword_fwd(aes_rotword(CurrentRoundKey[3])) XOR
-        aes_decode_rcon(r) XOR CurrentRoundKey[0]
-      let w[1] : bits(32) = w[0] XOR CurrentRoundKey[1]
-      let w[2] : bits(32) = w[1] XOR CurrentRoundKey[2]
-      let w[3] : bits(32) = w[2] XOR CurrentRoundKey[3]
-      set_velem(vd, EGW=128, i, w[3:0]);
-    }
-    RETIRE_SUCCESS
-  }
-}
-
---
++
+sail::execute[clause="VAESKF1_VI(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1796,37 +1768,8 @@ behavior to be fully defined for all values of `uimm[4:0]` with minimal extra lo
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
-[source,Sail]
---
-function clause execute (VAESKF2(rnd, vd, vs2)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
- // project out-of-range immediates into in-range values
- if((unsigned(rnd[3:0]) < 2) |  (unsigned(rnd[3:0]) > 14)) then rnd[3] = ~rnd[3]
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-      let CurrentRoundKey[3:0]  : bits(128)  = get_velem(vs2, EGW=128, i);
-      let RoundKeyB[3:0] : bits(32)  = get_velem(vd, EGW=128, i); // Previous round key
-
-      let w[0] : bits(32) = if (rnd[0]==1) then
-        aes_subword_fwd(CurrentRoundKey[3]) XOR RoundKeyB[0];
-      else
-        aes_subword_fwd(aes_rotword(CurrentRoundKey[3])) XOR aes_decode_rcon((rnd>>1) - 1) XOR RoundKeyB[0];
-      w[1] : bits(32) = w[0] XOR RoundKeyB[1]
-      w[2] : bits(32) = w[1] XOR RoundKeyB[2]
-      w[3] : bits(32) = w[2] XOR RoundKeyB[3]
-      set_velem(vd, EGW=128, i, w[3:0]);
-    }
-    RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESKF2_VI(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1904,27 +1847,8 @@ This instruction only exists in the `.vs` form because the `.vv` form would be i
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
-[source,sail]
---
-function clause execute (VAESZ(vs2, vd) = {
-  if(((vstart%EGS)<>0) | (LMUL*VLEN < EGW))  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let state : bits(128) = get_velem(vd, EGW=128, i);
-    let rkey  : bits(128) = get_velem(vs2, EGW=128, 0);
-    let ark   : bits(128) = state ^ rkey;
-    set_velem(vd, EGW=128, i, ark);
-  }
-  RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESZ_VS(_, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -2085,20 +2009,8 @@ Description::
 A bit reversal is performed on the bits of each element.
 
 Operation::
-[source,sail]
---
-function clause execute (VBREV(vs2)) = {
-
-  foreach (i from vstart to vl-1) {
-    let input = get_velem(vs2, SEW, i);
-    let output : bits(SEW) = 0;
-    foreach (i from 0 to SEW-1)
-      let output[SEW-1-i] = input[i];
-    set_velem(vd, SEW, i, output)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VBREV_V(_, _, _)"]
 
 Included in::
 <<zvbb>>
@@ -2154,20 +2066,8 @@ This byte-wise instruction is defined for all SEWs to eliminate the need to chan
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (VBREV8(vs2)) = {
-
-  foreach (i from vstart to vl-1) {
-    let input = get_velem(vs2, SEW, i);
-    let output : bits(SEW) = 0;
-    foreach (i from 0 to SEW-8 by 8)
-      let output[i+7..i] = reverse_bits_in_byte(input[i+7..i]);
-    set_velem(vd, SEW, i, output)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VBREV8_V(_, _, _)"]
 
 Included in::
 <<zvbb>>, <<zvkb>>, <<zvkn>>, <<zvknc>>, <<Zvkng>>, <<zvks>>
@@ -2416,19 +2316,8 @@ A leading zero count is performed on each element.
 The result for zero-valued inputs is the value SEW.
 
 Operation::
-[source,sail]
---
-function clause execute (VCLZ(vs2)) = {
-
-  foreach (i from vstart to vl-1) {
-    let input = get_velem(vs2, SEW, i);
-    for (j = (SEW - 1); j >= 0;  j--)
-      if [input[j]] == 0b1 then break;
-    set_velem(vd, SEW, i, SEW - 1 - j)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VCLZ_V(_, _, _)"]
 
 Included in::
 <<zvbb>>
@@ -2473,20 +2362,8 @@ Description::
 A population count is performed on each element.
 
 Operation::
-[source,sail]
---
-function clause execute (VCPOP(vs2)) = {
-
-  foreach (i from vstart to vl-1) {
-    let input = get_velem(vs2, SEW, i);
-    let output : bits(SEW) = 0;
-    for (j = 0; j < SEW;  j++)
-      output = output + input[j];
-    set_velem(vd, SEW, i, output)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VCPOP_V(_, _, _)"]
 
 Included in::
 <<zvbb>>
@@ -2533,19 +2410,8 @@ A trailing zero count is performed on each element.
 // The result for zero-valued inputs is the value SEW.
 
 Operation::
-[source,sail]
---
-function clause execute (VCTZ(vs2)) = {
-
-  foreach (i from vstart to vl-1) {
-    let input = get_velem(vs2, SEW, i);
-    for (j = 0; j < SEW;  j++)
-      if [input[j]] == 0b1 then break;
-    set_velem(vd, SEW, i, j)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VCTZ_V(_, _, _)"]
 
 Included in::
 <<zvbb>>
@@ -2636,44 +2502,8 @@ a future extension might define a vector-scalar version of this instruction wher
 ====
 
 Operation::
-[source,pseudocode]
---
-function clause execute (VGHSH(vs2, vs1, vd)) = {
-  // operands are input with bits reversed in each byte
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let Y = (get_velem(vd,EGW=128,i));  // current partial-hash
-    let X = get_velem(vs1,EGW=128,i);  // block cipher output
-    let H = brev8(get_velem(vs2,EGW=128,i)); // Hash subkey
-
-    let Z : bits(128) = 0;
-
-    let S = brev8(Y ^ X);
-
-    for (int bit = 0; bit < 128; bit++) {
-      if bit_to_bool(S[bit])
-        Z ^= H
-
-      bool reduce = bit_to_bool(H[127]);
-      H = H << 1; // left shift H by 1
-      if (reduce)
-        H ^= 0x87; // Reduce using x^7 + x^2 + x^1 + 1 polynomial
-    }
-
-    let result = brev8(Z); // bit reverse bytes to get back to GCM standard ordering
-    set_velem(vd, EGW=128, i, result);
-  }
-  RETIRE_SUCCESS
- }
-}
---
++
+sail::execute[clause="VGHSH_VV(_, _, _)"]
 
 Included in::
 <<zvkg>>, <<zvkng>>, <<zvksg>>
@@ -2767,41 +2597,8 @@ doesn't use the add-multiply form of the `vghsh.vv` instruction.
 
 
 Operation::
-[source,pseudocode]
---
-function clause execute (VGMUL(vs2, vs1, vd)) = {
-  // operands are input with bits reversed in each byte
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let Y = brev8(get_velem(vd,EGW=128,i));  // Multiplier
-    let H = brev8(get_velem(vs2,EGW=128,i)); // Multiplicand
-    let Z : bits(128) = 0;
-
-    for (int bit = 0; bit < 128; bit++) {
-      if bit_to_bool(Y[bit])
-        Z ^= H
-
-      bool reduce = bit_to_bool(H[127]);
-      H = H << 1; // left shift H by 1
-      if (reduce)
-        H ^= 0x87; // Reduce using x^7 + x^2 + x^1 + 1 polynomial
-    }
-
-
-    let result = brev8(Z);
-    set_velem(vd, EGW=128, i, result);
-  }
-  RETIRE_SUCCESS
- }
-}
---
++
+sail::execute[clause="VGMUL_VV(_, _, _)"]
 
 Included in::
 <<zvkg>>, <<zvkng>>, <<zvksg>>
@@ -2856,21 +2653,8 @@ This element-wise endian swapping is needed for several cryptographic algorithms
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (VREV8(vs2)) = {
-  foreach (i from vstart to vl-1) {
-    input = get_velem(vs2, SEW, i);
-    let output : SEW = 0;
-    let j = SEW - 1;
-    foreach (k from 0 to (SEW - 8) by 8) {
-      output[k..(k + 7)] = input[(j - 7)..j];
-      j = j - 8;
-    set_velem(vd, SEW, i, output)
-  }
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="VREV8_V(_, _, _)"]
 
 Included in::
 <<zvbb>>, <<zvkb>>, <<zvkn>>, <<zvknc>>, <<Zvkng>>, <<zvks>>
