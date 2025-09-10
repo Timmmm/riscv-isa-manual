@@ -1146,14 +1146,8 @@ Description::
 This instruction reverses the order of the bits in every byte of a register.
 
 Operation::
-[source,sail]
---
-result : xlenbits = EXTZ(0b0);
-foreach (i from 0 to sizeof(xlen) by 8) {
-    result[i+7..i] = reverse_bits_in_byte(X(rs1)[i+7..i]);
-};
-X(rd) = result;
---
++
+sail::execute[clause="BREV8(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1195,20 +1189,8 @@ Description::
 clmul produces the lower half of the 2·XLEN carry-less product.
 
 Operation::
-[source,sail]
---
-let rs1_val = X(rs1);
-let rs2_val = X(rs2);
-let output : xlenbits = 0;
-
-foreach (i from 0 to (xlen - 1) by 1) {
-   output = if   ((rs2_val >> i) & 1)
-            then output ^ (rs1_val << i);
-            else output;
-}
-
-X[rd] = output
---
++
+sail::execute[clause="CLMUL(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1254,20 +1236,8 @@ Description::
 clmulh produces the upper half of the 2·XLEN carry-less product.
 
 Operation::
-[source,sail]
---
-let rs1_val = X(rs1);
-let rs2_val = X(rs2);
-let output : xlenbits = 0;
-
-foreach (i from 1 to xlen by 1) {
-   output = if   ((rs2_val >> i) & 1)
-            then output ^ (rs1_val >> (xlen - i));
-            else output;
-}
-
-X[rd] = output
---
++
+sail::execute[clause="CLMULH(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1463,12 +1433,8 @@ sign extending the 32-bit result to the rest of _rd_.
 This instruction only exists on RV64 based systems.
 
 Operation::
-[source,sail]
---
-let lo_half : bits(16) = X(rs1)[15..0];
-let hi_half : bits(16) = X(rs2)[15..0];
-X(rd) = EXTS(hi_half @ lo_half);
---
++
+sail::execute[clause="ZBKB_PACKW(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1521,19 +1487,8 @@ Description::
 This instruction reverses the order of the bytes in _rs_.
 
 Operation::
-[source,sail]
---
-let input = X(rs);
-let output : xlenbits = 0;
-let j = xlen - 1;
-
-foreach (i from 0 to (xlen - 8) by 8) {
-   output[i..(i + 7)] = input[(j - 7)..j];
-   j = j - 8;
-}
-
-X[rd] = output
---
++
+sail::execute[clause="REV8(_, _)",part=body,unindent]
 
 .Note
 [NOTE, caption="A" ]
@@ -1769,15 +1724,8 @@ This instruction performs a rotate right of _rs1_ by the amount in the least-sig
 For RV32, the encodings corresponding to shamt[5]=1 are reserved.
 
 Operation::
-[source,sail]
---
-let shamt = if   xlen == 32
-            then shamt[4..0]
-            else shamt[5..0];
-let result = (X(rs1) >> shamt) | (X(rs1) << (xlen - shamt));
-
-X(rd) = result;
---
++
+sail::execute[clause="RORI(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1828,12 +1776,8 @@ the more-significant bits.
 
 
 Operation::
-[source,sail]
---
-let rs1_data = EXTZ(X(rs1)[31..0];
-let result = (rs1_data >> shamt) | (rs1_data << (32 - shamt));
-X(rd) = EXTS(result[31..0]);
---
++
+sail::execute[clause="RORI(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1942,15 +1886,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA256SIG0(rs1,rd)) = {
-  let inb    : bits(32) = X(rs1)[31..0];
-  let result : bits(32) = ror32(inb,  7) ^ ror32(inb, 18) ^ (inb >>  3);
-  X(rd)      = EXTS(result);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA256SIG0(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2008,15 +1945,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA256SIG1(rs1,rd)) = {
-  let inb    : bits(32) = X(rs1)[31..0];
-  let result : bits(32) = ror32(inb, 17) ^ ror32(inb, 19) ^ (inb >> 10);
-  X(rd)      = EXTS(result);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA256SIG1(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2074,15 +2004,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA256SUM0(rs1,rd)) = {
-  let inb    : bits(32) = X(rs1)[31..0];
-  let result : bits(32) = ror32(inb,  2) ^ ror32(inb, 13) ^ ror32(inb, 22);
-  X(rd)      = EXTS(result);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA256SUM0(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2140,15 +2063,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA256SUM1(rs1,rd)) = {
-  let inb    : bits(32) = X(rs1)[31..0];
-  let result : bits(32) = ror32(inb,  6) ^ ror32(inb, 11) ^ ror32(inb, 25);
-  X(rd)      = EXTS(result);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA256SUM1(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2215,14 +2131,8 @@ using the following instruction sequence:
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG0H(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) >>  1) ^ (X(rs1) >>  7) ^ (X(rs1) >>  8) ^
-               (X(rs2) << 31)                  ^ (X(rs2) << 24) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG0H(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2289,14 +2199,8 @@ using the following instruction sequence:
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG0L(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) >>  1) ^ (X(rs1) >>  7) ^ (X(rs1) >>  8) ^
-               (X(rs2) << 31) ^ (X(rs2) << 25) ^ (X(rs2) << 24) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG0L(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2363,14 +2267,8 @@ using the following instruction sequence:
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG1H(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) <<  3) ^ (X(rs1) >>  6) ^ (X(rs1) >> 19) ^
-               (X(rs2) >> 29)                  ^ (X(rs2) << 13) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG1H(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2437,14 +2335,8 @@ using the following instruction sequence:
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG1L(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) <<  3) ^ (X(rs1) >>  6) ^ (X(rs1) >> 19) ^
-               (X(rs2) >> 29) ^ (X(rs2) << 26) ^ (X(rs2) << 13) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG1L(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2511,14 +2403,8 @@ Note the reversed source register ordering.
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SUM0R(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) << 25) ^ (X(rs1) << 30) ^ (X(rs1) >> 28) ^
-               (X(rs2) >>  7) ^ (X(rs2) >>  2) ^ (X(rs2) <<  4) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SUM0R(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2585,14 +2471,8 @@ Note the reversed source register ordering.
 ====
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SUM1R(rs2, rs1, rd)) = {
-  X(rd) = EXTS((X(rs1) << 23) ^ (X(rs1) >> 14) ^ (X(rs1) >> 18) ^
-               (X(rs2) >>  9) ^ (X(rs2) << 18) ^ (X(rs2) << 14) );
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SUM1R(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2646,13 +2526,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG0(rs1, rd)) = {
-  X(rd) = ror64(X(rs1),  1) ^ ror64(X(rs1),  8) ^ (X(rs1) >> 7);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG0(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2706,13 +2581,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SIG1(rs1, rd)) = {
-  X(rd) = ror64(X(rs1), 19) ^ ror64(X(rs1), 61) ^ (X(rs1) >> 6);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SIG1(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2766,13 +2636,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SUM0(rs1, rd)) = {
-  X(rd) = ror64(X(rs1), 28) ^ ror64(X(rs1), 34) ^ ror64(X(rs1) ,39);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SUM0(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -2826,13 +2691,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
-[source,sail]
---
-function clause execute (SHA512SUM1(rs1, rd)) = {
-  X(rd) = ror64(X(rs1), 14) ^ ror64(X(rs1), 18) ^ ror64(X(rs1) ,41);
-  RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="SHA512SUM1(_, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -3112,13 +2972,8 @@ It is the inverse of the <<insns-zip-sc,zip>> instruction.
 This instruction is available only on RV32.
 
 Operation::
-[source,sail]
---
-foreach (i from 0 to xlen/2-1) {
-  X(rd)[i] = X(rs1)[2*i]
-  X(rd)[i+xlen/2] = X(rs1)[2*i+1]
-}
---
++
+sail::execute[clause="UNZIP(_, _)",part=body,unindent]
 
 .Software Hint
 [NOTE, caption="SH" ]
@@ -3222,22 +3077,8 @@ The result is each element in _rs2_ replaced by the indexed element in _rs1_,
 or zero if the index into _rs2_ is out of bounds.
 
 Operation::
-[source,sail]
---
-val xperm8_lookup : (bits(8), xlenbits) -> bits(8)
-function xperm8_lookup (idx, lut) = {
-    (lut >> (idx @ 0b000))[7..0]
-}
-
-function clause execute ( XPERM8 (rs2,rs1,rd)) = {
-    result : xlenbits = EXTZ(0b0);
-    foreach(i from 0 to xlen by 8) {
-        result[i+7..i] = xperm8_lookup(X(rs2)[i+7..i], X(rs1));
-    };
-    X(rd) = result;
-    RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="XPERM8(_, _, _)",part=body,uindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -3284,22 +3125,8 @@ The result is each element in _rs2_ replaced by the indexed element in _rs1_,
 or zero if the index into _rs2_ is out of bounds.
 
 Operation::
-[source,sail]
---
-val xperm4_lookup : (bits(4), xlenbits) -> bits(4)
-function xperm4_lookup (idx, lut) = {
-    (lut >> (idx @ 0b00))[3..0]
-}
-
-function clause execute ( XPERM4 (rs2,rs1,rd)) = {
-    result : xlenbits = EXTZ(0b0);
-    foreach(i from 0 to xlen by 4) {
-        result[i+3..i] = xperm4_lookup(X(rs2)[i+3..i], X(rs1));
-    };
-    X(rd) = result;
-    RETIRE_SUCCESS
-}
---
++
+sail::execute[clause="XPERM4(_, _, _)",part=body,unindent]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -3346,13 +3173,8 @@ It is the inverse of the <<insns-unzip-sc,unzip>> instruction.
 This instruction is available only on RV32.
 
 Operation::
-[source,sail]
---
-foreach (i from 0 to xlen/2-1) {
-  X(rd)[2*i] = X(rs1)[i]
-  X(rd)[2*i+1] = X(rs1)[i+xlen/2]
-}
---
++
+sail::execute[clause="ZIP(_, _)",part=body,unindent]
 
 .Software Hint
 [NOTE, caption="SH" ]
