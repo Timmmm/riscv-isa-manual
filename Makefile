@@ -60,8 +60,11 @@ ifneq ($(SKIP_DOCKER),true)
         endif
     endif
 
+    # TODO: -e HOME=/tmp is some Ruby nonsense needed so we can
+    # install the latest asciidoctor-sail. We need to remove it.
     DOCKER_CMD = \
         ${DOCKER_BIN} run --rm \
+            -e HOME=/tmp \
             -v ${PWD}/$@.workdir:/build${DOCKER_VOL_SUFFIX} \
             -v ${PWD}/src:/src:ro${DOCKER_EXTRA_VOL_SUFFIX} \
             -v ${PWD}/docs-resources:/docs-resources:ro${DOCKER_EXTRA_VOL_SUFFIX} \
@@ -70,6 +73,8 @@ ifneq ($(SKIP_DOCKER),true)
             ${DOCKER_IMG} \
             /bin/sh -c
     DOCKER_QUOTE := "
+    # TODO: Remove when this branch is merged & published.
+    UPDATE_ADOC_SAIL := gem install --user-install specific_install && gem specific_install --user-install --branch sail-xref https://github.com/Alasdair/asciidoctor-sail.git &&
 else
     DOCKER_CMD = \
         cd $@.workdir &&
@@ -87,6 +92,11 @@ else
 # Make will know to download it again.
 SAIL_ASCIIDOC_JSON_URL_FILE = sail.json.url
 SAIL_ASCIIDOC_JSON = $(BUILD_DIR)/sail.json
+
+# Also download the Sail code converted to HTML.
+# asciidoctor-sail supports autolinking to it.
+SAIL_HTML_TGZ_URL_FILE = sail.html.tgz.url
+SAIL_HTML = $(BUILD_DIR)/html_docs/core/prelude.html
 
 WORKDIR_SETUP = \
     rm -rf $@.workdir && \
@@ -154,25 +164,25 @@ ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON)
 
 $(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
 
 $(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
 
 $(BUILD_DIR)/%.epub: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_EPUB) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_EPUB) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
 
 $(BUILD_DIR)/%-norm-tags.json: $(SRC_DIR)/%.adoc $(ALL_SRCS) docs-resources/converters/tags.rb
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_TAGS) $(OPTIONS) -a tags-match-prefix='norm:' -a tags-output-suffix='-norm-tags.json' $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_TAGS) $(OPTIONS) -a tags-match-prefix='norm:' -a tags-output-suffix='-norm-tags.json' $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 
 # Download the Sail JSON.
@@ -180,6 +190,12 @@ $(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE)
 	@echo "Downloading Sail model code..."
 	mkdir -p $(BUILD_DIR)
 	@curl --location '$(shell cat $<)' --output $@
+
+# Download the Sail HTML bundle.
+$(SAIL_HTML): $(SAIL_HTML_TGZ_URL_FILE)
+	@echo "Downloading Sail model HTML..."
+	mkdir -p $(BUILD_DIR)
+	@curl --location '$(shell cat $<)' | tar --extract --gzip --directory=$(BUILD_DIR)
 
 # Update docker image to latest
 docker-pull-latest:

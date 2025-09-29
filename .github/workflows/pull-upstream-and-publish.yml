@@ -68,6 +68,7 @@ jobs:
           cp -r pages dist
           cp build/riscv-unprivileged.html dist/riscv-unprivileged.html
           cp build/riscv-privileged.html dist/riscv-privileged.html
+          cp --recursive build/html_docs dist/html_docs
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
