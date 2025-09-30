@@ -160,7 +160,7 @@ ifeq ("$(wildcard docs-resources/global-config.adoc)","")
 endif
 
 build-pdf: $(DOCS_PDF)
-build-html: $(DOCS_HTML)
+build-html: $(DOCS_HTML) $(SAIL_HTML)
 build-epub: $(DOCS_EPUB)
 build-tags: $(DOCS_NORM_TAGS)
 build-norm-rules: $(NORM_RULES)
