@@ -1098,10 +1098,8 @@ Description::
 This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise inversion of _rs2_.
 
 Operation::
-[source,sail]
---
-X(rd) = X(rs1) & ~X(rs2);
---
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ANDN]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1283,10 +1281,8 @@ Description::
 This instruction performs the bitwise logical OR operation between _rs1_ and the bitwise inversion of _rs2_.
 
 Operation::
-[source,sail]
---
-X(rd) = X(rs1) | ~X(rs2);
---
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ORN]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1333,12 +1329,8 @@ The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
 _rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
 
 Operation::
-[source,sail]
---
-let lo_half : bits(xlen/2) = X(rs1)[xlen/2-1..0];
-let hi_half : bits(xlen/2) = X(rs2)[xlen/2-1..0];
-X(rd) = EXTZ(hi_half @ lo_half);
---
++
+sail::execute[clause="ZBKB_RTYPE(_, _, _, _)",unindent,part=split,split=PACK]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1382,12 +1374,8 @@ _rs1_ and _rs2_ into the 16 least-significant bits of _rd_,
 zero extending the rest of _rd_.
 
 Operation::
-[source,sail]
---
-let lo_half : bits(8) = X(rs1)[7..0];
-let hi_half : bits(8) = X(rs2)[7..0];
-X(rd) = EXTZ(hi_half @ lo_half);
---
++
+sail::execute[clause="ZBKB_RTYPE(_, _, _, _)",unindent,part=split,split=PACKH]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1549,15 +1537,8 @@ Description::
 This instruction performs a rotate left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
-[source,sail]
---
-let shamt = if   xlen == 32
-            then X(rs2)[4..0]
-            else X(rs2)[5..0];
-let result = (X(rs1) << shamt) | (X(rs1) >> (xlen - shamt));
-
-X(rd) = result;
---
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ROL]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1604,13 +1585,8 @@ This instruction performs a rotate left on the least-significant word of  _rs1_ 
 The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits.
 
 Operation::
-[source,sail]
---
-let rs1 = EXTZ(X(rs1)[31..0])
-let shamt = X(rs2)[4..0];
-let result = (rs1 << shamt) | (rs1 >> (32 - shamt));
-X(rd) = EXTS(result[31..0]);
---
++
+sail::execute[clause="ZBB_RTYPEW(_, _, _, _)",unindent,part=split,split=ROLW]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1656,15 +1632,8 @@ Description::
 This instruction performs a rotate right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
-[source,sail]
---
-let shamt = if   xlen == 32
-            then X(rs2)[4..0]
-            else X(rs2)[5..0];
-let result = (X(rs1) >> shamt) | (X(rs1) << (xlen - shamt));
-
-X(rd) = result;
---
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ROR]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -1824,13 +1793,8 @@ This instruction performs a rotate right on the least-significant word of  _rs1_
 The resultant word is sign-extended by copying bit 31 to all of the more-significant bits.
 
 Operation::
-[source,sail]
---
-let rs1 = EXTZ(X(rs1)[31..0])
-let shamt = X(rs2)[4..0];
-let result = (rs1 >> shamt) | (rs1 << (32 - shamt));
-X(rd) = EXTS(result);
---
++
+sail::execute[clause="ZBB_RTYPEW(_, _, _, _)",unindent,part=split,split=RORW]
 
 Included in::
 [%header,cols="4,2,2"]
@@ -3024,10 +2988,8 @@ Description::
 This instruction performs the bit-wise exclusive-NOR operation on _rs1_ and _rs2_.
 
 Operation::
-[source,sail]
---
-X(rd) = ~(X(rs1) ^ X(rs2));
---
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=XNOR]
 
 Included in::
 [%header,cols="4,2,2"]
