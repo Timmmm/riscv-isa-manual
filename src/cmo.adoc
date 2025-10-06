@@ -590,39 +590,11 @@ A `CBO.INVAL` instruction executes or raises either an illegal-instruction
 exception or a virtual-instruction exception based on the state of the
 `x{csrname}.CBIE` fields:
 
-[source,sail,subs="attributes+"]
---
+sail::encdec_cbie[type=mapping,left-clause="CBIE_ILLEGAL"]
+sail::encdec_cbie[type=mapping,left-clause="CBIE_EXEC_FLUSH"]
+sail::encdec_cbie[type=mapping,left-clause="CBIE_EXEC_INVAL"]
+sail::cbop_priv_check[part=source]
 
-// illegal-instruction exceptions
-if (((priv_mode != M) && (m{csrname}.CBIE == 00)) ||
-    ((priv_mode == U) && (s{csrname}.CBIE == 00)))
-{
-  <raise illegal-instruction exception>
-}
-// virtual-instruction exceptions
-else if (((priv_mode == VS) && (h{csrname}.CBIE == 00)) ||
-         ((priv_mode == VU) && ((h{csrname}.CBIE == 00) || (s{csrname}.CBIE == 00))))
-{
-  <raise virtual-instruction exception>
-}
-// execute instruction
-else
-{
-  if (((priv_mode != M) && (m{csrname}.CBIE == 01)) ||
-      ((priv_mode == U) && (s{csrname}.CBIE == 01)) ||
-      ((priv_mode == VS) && (h{csrname}.CBIE == 01)) ||
-      ((priv_mode == VU) && ((h{csrname}.CBIE == 01) || (s{csrname}.CBIE == 01))))
-  {
-    <execute CBO.INVAL and perform flush operation>
-  }
-  else
-  {
-    <execute CBO.INVAL and perform invalidate operation>
-  }
-}
-
-
---
 
 [NOTE]
 ====
@@ -643,54 +615,13 @@ A `CBO.CLEAN` or `CBO.FLUSH` instruction executes or raises an illegal-instructi
 or virtual-instruction exception based on the state of the
 `x{csrname}.CBCFE` bits:
 
-[source,sail,subs="attributes+"]
---
-
-// illegal-instruction exceptions
-if (((priv_mode != M) && !m{csrname}.CBCFE) ||
-    ((priv_mode == U) && !s{csrname}.CBCFE))
-{
-  <raise illegal-instruction exception>
-}
-// virtual-instruction exceptions
-else if (((priv_mode == VS) && !h{csrname}.CBCFE) ||
-         ((priv_mode == VU) && !(h{csrname}.CBCFE && s{csrname}.CBCFE)))
-{
-  <raise virtual-instruction exception>
-}
-// execute instruction
-else
-{
-  <execute CBO.CLEAN or CBO.FLUSH>
-}
-
---
+sail::feature_enabled_for_priv[part=source]
+sail::cbo_clean_flush_enabled[part=source]
 
 Finally, a `CBO.ZERO` instruction executes or raises an illegal-instruction or
 virtual-instruction exception based on the state of the `x{csrname}.CBZE` bits:
 
-[source,sail,subs="attributes+"]
---
-
-// illegal-instruction exceptions
-if (((priv_mode != M) && !m{csrname}.CBZE) ||
-    ((priv_mode == U) && !s{csrname}.CBZE))
-{
-  <raise illegal-instruction exception>
-}
-// virtual-instruction exceptions
-else if (((priv_mode == VS) && !h{csrname}.CBZE) ||
-         ((priv_mode == VU) && !(h{csrname}.CBZE && s{csrname}.CBZE)))
-{
-  <raise virtual-instruction exception>
-}
-// execute instruction
-else
-{
-  <execute CBO.ZERO>
-}
-
---
+sail::cbo_zero_enabled[part=source]
 
 The CBIE/CBCFE/CBZE fields in each `x{csrname}` register do not affect the
 read and write behavior of the same fields in the other `x{csrname}` registers.
