@@ -90,14 +90,9 @@ If _rs2_ contains the value zero, this instruction writes the value zero to _rd_
 This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd_.
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
 
-SAIL code::
-[source,sail]
---
-  let condition = X(rs2);
-  result : xlenbits = if (condition == zeros()) then zeros()
-                                                else X(rs1);
-  X(rd) = result;
---
+Sail code::
++
+sail::execute[clause="ZICOND_RTYPE(_, _, _, _)",unindent,part=split,split=CZERO_EQZ]
 
 <<<
 
@@ -129,14 +124,9 @@ If _rs2_ contains a nonzero value, this instruction writes the value zero to _rd
 This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd_.
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
 
-SAIL code::
-[source,sail]
---
-  let condition = X(rs2);
-  result : xlenbits = if (condition != zeros()) then zeros()
-                                                else X(rs1);
-  X(rd) = result;
---
+Sail code::
++
+sail::execute[clause="ZICOND_RTYPE(_, _, _, _)",unindent,part=split,split=CZERO_NEZ]
 
 === Usage examples
 
