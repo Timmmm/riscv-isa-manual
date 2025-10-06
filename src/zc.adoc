@@ -379,7 +379,7 @@ None
 //<<insns-lbu>>
 
 Operation::
-
++
 sail::execute[clause="C_LBU(_, _, _)",part=body,unindent]
 
 <<<
@@ -435,7 +435,7 @@ None
 //<<insns-lhu>>
 
 Operation::
-
++
 sail::execute[clause="C_LHU(_, _, _)",part=body,unindent]
 
 <<<
@@ -491,7 +491,7 @@ None
 //<<insns-lh>>
 
 Operation::
-
++
 sail::execute[clause="C_LH(_, _, _)",part=body,unindent]
 
 <<<
@@ -547,7 +547,7 @@ None
 //<<insns-sb>>
 
 Operation::
-
++
 sail::execute[clause="C_SB(_, _, _)",part=body,unindent]
 
 <<<
@@ -604,7 +604,7 @@ None
 //<<insns-sh>>
 
 Operation::
-
++
 sail::execute[clause="C_SH(_, _, _)",part=body,unindent]
 
 <<<
@@ -661,7 +661,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 ====
 
 Operation::
-
++
 sail::execute[clause="C_ZEXT_B(_)",part=body,unindent]
 
 <<<
@@ -714,7 +714,7 @@ Zbb is also required.
 The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 
 Operation::
-
++
 sail::execute[clause="C_SEXT_B(_)",part=body,unindent]
 
 <<<
@@ -768,7 +768,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 ====
 
 Operation::
-
++
 sail::execute[clause="C_ZEXT_H(_)",part=body,unindent]
 
 <<<
@@ -822,7 +822,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 ====
 
 Operation::
-
++
 sail::execute[clause="C_SEXT_H(_)",part=body,unindent]
 
 <<<
@@ -879,7 +879,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 ====
 
 Operation::
-
++
 sail::execute[clause="C_ZEXT_W(_)",part=body,unindent]
 
 <<<
@@ -934,7 +934,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_.
 ====
 
 Operation::
-
++
 sail::execute[clause="C_NOT(_)",part=body,unindent]
 
 <<<
@@ -986,7 +986,7 @@ The SAIL module variable for _rd'/rs1'_ is called _rsdc_, and for _rs2'_ is call
 ====
 
 Operation::
-
++
 sail::execute[clause="C_MUL(_, _)",part=body,unindent]
 
 <<<
