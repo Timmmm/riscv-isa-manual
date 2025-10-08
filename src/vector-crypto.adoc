@@ -1257,30 +1257,8 @@ on the data being operated upon.
 //  if( ((vl%EGS)<>0) | ((vstart%EGS)<>0) | (LMUL*VLEN < EGW))  then {
 
 Operation::
-[source,sail]
---
-function clause execute (VAESDF(vs2, vd, suffix)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let keyelem = if suffix == "vv" then i else 0;
-    let state : bits(128) = get_velem(vd,  EGW=128, i);
-    let rkey  : bits(128) = get_velem(vs2, EGW=128, keyelem);
-    let sr    : bits(128) = aes_shift_rows_inv(state);
-    let sb    : bits(128) = aes_subbytes_inv(sr);
-    let ark   : bits(128) = sb ^ rkey;
-    set_velem(vd, EGW=128, i, ark);
-  }
-  RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESDF(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1362,31 +1340,8 @@ on the data being operated upon.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
-[source,sail]
---
-function clause execute (VAESDM(vs2, vd, suffix)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let keyelem = if suffix == "vv" then i else 0;
-    let state : bits(128) = get_velem(vd, EGW=128, i);
-    let rkey  : bits(128) = get_velem(vs2, EGW=128, keyelem);
-    let sr    : bits(128) = aes_shift_rows_inv(state);
-    let sb    : bits(128) = aes_subbytes_inv(sr);
-    let ark   : bits(128) = sb ^ rkey;
-    let mix   : bits(128) = aes_mixcolumns_inv(ark);
-    set_velem(vd, EGW=128, i, mix);
-  }
-  RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESDM(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1468,30 +1423,8 @@ on the data being operated upon.
 
 
 Operation::
-[source,sail]
---
-function clause execute (VAESEF(vs2, vd, suffix) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let keyelem = if suffix == "vv" then i else 0;
-    let state : bits(128) = get_velem(vd, EGW=128, i);
-    let rkey  : bits(128) = get_velem(vs2, EGW=128, keyelem);
-    let sb    : bits(128) = aes_subbytes_fwd(state);
-    let sr    : bits(128) = aes_shift_rows_fwd(sb);
-    let ark   : bits(128) = sr ^ rkey;
-    set_velem(vd, EGW=128, i, ark);
-  }
-  RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESEF(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1573,31 +1506,8 @@ on the data being operated upon.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
-[source,sail]
---
-function clause execute (VAESEM(vs2, vd, suffix)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let keyelem = if suffix == "vv" then i else 0;
-    let state : bits(128) = get_velem(vd, EGW=128, i);
-    let rkey  : bits(128) = get_velem(vs2, EGW=128, keyelem);
-    let sb    : bits(128) = aes_subbytes_fwd(state);
-    let sr    : bits(128) = aes_shift_rows_fwd(sb);
-    let mix   : bits(128) = aes_mixcolumns_fwd(sr);
-    let ark   : bits(128) = mix ^ rkey;
-    set_velem(vd, EGW=128, i, ark);
-  }
-  RETIRE_SUCCESS
-  }
-}
---
++
+sail::execute[clause="VAESEM(_, _, _)"]
 
 Included in::
 <<zvkn>>, <<zvknc>>, <<zvkned>>, <<zvkng>>
@@ -1949,18 +1859,8 @@ of the immediate value with the `vand.vi` instruction.
 Operation::
 [source,sail]
 --
-function clause execute (VANDN(vs2, vs1, vd, suffix)) = {
-  foreach (i from vstart to vl-1) {
-    let op1 = match suffix {
-      "vv" => get_velem(vs1, SEW, i),
-      "vx" => sext_or_truncate_to_sew(X(vs1))
-    };
-    let op2 = get_velem(vs2, SEW, i);
-    set_velem(vd, EEW=SEW, i, ~op1 & op2);
-  }
-  RETIRE_SUCCESS
-}
-
+include::sail:execute[clause="VANDN_VV(_, _, _, _)"]
+include::sail:execute[clause="VANDN_VX(_, _, _, _)"]
 --
 
 Included in::
@@ -2151,27 +2051,10 @@ vector carryless multiplication instructions.
 Operation::
 [source,sail]
 --
-
-
-function clause execute (VCLMUL(vs2, vs1, vd, suffix)) = {
-
-  foreach (i from vstart to vl-1) {
-    let op1 : bits (64) = if suffix =="vv" then get_velem(vs1,i)
-                          else zext_or_truncate_to_sew(X(vs1));
-    let op2 : bits (64) = get_velem(vs2,i);
-    let product : bits (64) = clmul(op1,op2,SEW);
-    set_velem(vd, i, product);
-  }
-  RETIRE_SUCCESS
-}
-
-function clmul(x, y, width) = {
-  let result : bits(width) = zeros();
-  foreach (i from 0 to (width - 1)) {
-    if y[i] == 1 then result = result ^ (x << i);
-  }
-  result
-}
+include::sail:execute[clause="VCLMUL_VV(_, _, _, _)"]
+include::sail:execute[clause="VCLMUL_VX(_, _, _, _)"]
+include::sail:carryless_mul[type=val]
+include::sail:carryless_mul[]
 --
 
 Included in::
@@ -2247,26 +2130,10 @@ significant 64 bits of the carry-less product.
 Operation::
 [source,sail]
 --
-function clause execute (VCLMULH(vs2, vs1, vd, suffix)) = {
-
-  foreach (i from vstart to vl-1) {
-    let op1 : bits (64) = if suffix =="vv" then get_velem(vs1,i)
-                          else zext_or_truncate_to_sew(X(vs1));
-    let op2 : bits (64) = get_velem(vs2, i);
-    let product : bits (64) = clmulh(op1, op2, SEW);
-    set_velem(vd, i, product);
-  }
-  RETIRE_SUCCESS
-}
-
-function clmulh(x, y, width) = {
-  let result : bits(width) = 0;
-  foreach (i from 1 to (width - 1)) {
-    if y[i] == 1 then result = result ^ (x >> (width - i));
-  }
-  result
-}
-
+include::sail:execute[clause="VCLMULH_VV(_, _, _, _)"]
+include::sail:execute[clause="VCLMULH_VX(_, _, _, _)"]
+include::sail:carryless_mul[type=val]
+include::sail:carryless_mul[]
 --
 
 Included in::
@@ -3010,70 +2877,15 @@ that `vd`, `vs1` and `vs2` each are different registers.
 Operation::
 [source,sail]
 --
-function clause execute (VSHA2c(vs2, vs1, vd)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-   let {a @ b @ e @ f} : bits(4*SEW) = get_velem(vs2, 4*SEW, i);
-   let {c @ d @ g @ h} : bits(4*SEW) = get_velem(vd, 4*SEW, i);
-   let MessageShedPlusC[3:0] : bits(4*SEW) = get_velem(vs1, 4*SEW, i);
-   let {W1, W0} == VSHA2cl ? MessageSchedPlusC[1:0] : MessageSchedPlusC[3:2]; // l vs h difference is the words selected
-
-   let T1 : bits(SEW) = h + sum1(e) + ch(e,f,g) + W0;
-   let T2 : bits(SEW) = sum0(a) + maj(a,b,c);
-   h  = g;
-   g  = f;
-   f  = e;
-   e  = d + T1;
-   d  = c;
-   c  = b;
-   b  = a;
-   a  = T1 + T2;
-
-
-   T1  = h + sum1(e) + ch(e,f,g) + W1;
-   T2  = sum0(a) + maj(a,b,c);
-   h = g;
-   g = f;
-   f = e;
-   e = d + T1;
-   d = c;
-   c = b;
-   b = a;
-   a = T1 + T2;
-   set_velem(vd, 4*SEW, i, {a @ b @ e @ f});
-  }
-  RETIRE_SUCCESS
-  }
-}
-
-function sum0(x) = {
- match SEW {
-  32 => rotr(x,2)  XOR rotr(x,13) XOR rotr(x,22),
-  64 => rotr(x,28) XOR rotr(x,34) XOR rotr(x,39)
- }
-}
-
-function sum1(x) = {
- match SEW {
-  32 => rotr(x,6)  XOR rotr(x,11) XOR rotr(x,25),
-  64 => rotr(x,14) XOR rotr(x,18) XOR rotr(x,41)
- }
-}
-
-function ch(x, y, z) = ((x & y) ^ ((~x) & z))
-
-
-function maj(x, y, z) =  ((x & y) ^ (x & z) ^ (y & z))
-
-function ROTR(x,n) = (x >> n) | (x << SEW - n)
-
+include::sail:execute[clause="ZVKSHA2TYPE(_, _, _, _)"]
+include::sail:zvk_sum0[type=val]
+include::sail:zvk_sum0[]
+include::sail:zvk_sum1[type=val]
+include::sail:zvk_sum1[]
+include::sail:zvk_ch[type=val]
+include::sail:zvk_ch[]
+include::sail:zvk_maj[type=val]
+include::sail:zvk_maj[]
 --
 
 Included in::
@@ -3215,50 +3027,11 @@ that `vd`, `vs1` and `vs2` each contain different portions of the message schedu
 Operation::
 [source,sail]
 --
-function clause execute (VSHA2ms(vs2, vs1, vd)) = {
-  // SEW32 = SHA-256
-  // SEW64 =  SHA-512
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    {W[3] @  W[2] @  W[1] @  W[0]}  : bits(EGW) = get_velem(vd, EGW, i);
-    {W[11] @ W[10] @ W[9] @  W[4]}  : bits(EGW) = get_velem(vs2, EGW, i);
-    {W[15] @ W[14] @ W[13] @ W[12]} : bits(EGW) = get_velem(vs1, EGW, i);
-
-    W[16] = sig1(W[14]) + W[9]  + sig0(W[1]) + W[0];
-    W[17] = sig1(W[15]) + W[10] + sig0(W[2]) + W[1];
-    W[18] = sig1(W[16]) + W[11] + sig0(W[3]) + W[2];
-    W[19] = sig1(W[17]) + W[12] + sig0(W[4]) + W[3];
-
-    set_velem(vd, EGW, i, {W[19] @ W[18] @ W[17] @ W[16]});
-  }
-  RETIRE_SUCCESS
-  }
-}
-
-function sig0(x) = {
- match SEW {
-  32 => (ROTR(x,7) XOR ROTR(x,18) XOR SHR(x,3)),
-  64 => (ROTR(x,1) XOR ROTR(x,8) XOR SHR(x,7)));
- }
-}
-
-function sig1(x) = {
- match SEW {
-  32 => (ROTR(x,17) XOR ROTR(x,19) XOR SHR(x,10),
-  64 => ROTR(x,19) XOR ROTR(x,61) XOR SHR(x,6));
- }
-}
-
-function ROTR(x,n) = (x >> n) | (x << SEW - n)
-function SHR (x,n) = x >> n
-
+include::sail:execute[clause="VSHA2MS_VV(_, _, _)"]
+include::sail:zvk_sig0[type=val]
+include::sail:zvk_sig0[]
+include::sail:zvk_sig1[type=val]
+include::sail:zvk_sig1[]
 --
 
 Included in::
@@ -3366,92 +3139,18 @@ that `vd` and `vs2` each are different registers.
 Operation::
 [source,sail]
 --
-function clause execute (VSM3C(rnds, vs2, vd)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-
-  // load state
-  let {Hi @ Gi @ Fi @ Ei @ Di @ Ci @ Bi @ Ai} : bits(256) : bits(256) = (get_velem(vd, 256, i));
-  //load message schedule
-  let {u_w7 @ u_w6 @ w5i @ w4i @ u_w3 @ u_w2 @ w1i @ w0i} : bits(256) = (get_velem(vs2, 256, i));
-  // u_w inputs are unused
-
-// perform endian swap
-let H : bits(32) = rev8(Hi);
-let G : bits(32) = rev8(Gi);
-let F : bits(32) = rev8(Fi);
-let E : bits(32) = rev8(Ei);
-let D : bits(32) = rev8(Di);
-let C : bits(32) = rev8(Ci);
-let B : bits(32) = rev8(Bi);
-let A : bits(32) = rev8(Ai);
-
-let w5 = : bits(32) rev8(w5i);
-let w4 = : bits(32) rev8(w4i);
-let w1 = : bits(32) rev8(w1i);
-let w0 = : bits(32) rev8(w0i);
-
-let x0 :bits(32) = w0 ^ w4;  // W'[0]
-let x1 :bits(32) = w1 ^ w5;  // W'[1]
-
-let j = 2 * rnds;
-let ss1 : bits(32) = ROL32(ROL32(A, 12) + E + ROL32(T_j(j), j % 32), 7);
-let ss2 : bits(32) = ss1 ^ ROL32(A, 12);
-let tt1 : bits(32) = FF_j(A, B, C, j) + D + ss2 + x0;
-let tt2 : bits(32) = GG_j(E, F, G, j) + H + ss1 + w0;
-D = C;
-let : bits(32) C1 = ROL32(B, 9);
-B = A;
-let A1 : bits(32) = tt1;
-H = G;
-let G1 : bits(32) = ROL32(F, 19);
-F = E;
-let E1 : bits(32) = P_0(tt2);
-
-j = 2 * rnds + 1;
-ss1 = ROL32(ROL32(A1, 12) + E1 + ROL32(T_j(j), j % 32), 7);
-ss2 = ss1 ^ ROL32(A1, 12);
-tt1 = FF_j(A1, B, C1, j) + D + ss2 + x1;
-tt2 = GG_j(E1, F, G1, j) + H + ss1 + w1;
-D = C1;
-let C2 : bits(32) = ROL32(B, 9);
-B = A1;
-let A2 : bits(32) = tt1;
-H = G1;
-let G2 = : bits(32) ROL32(F, 19);
-F = E1;
-let E2 = : bits(32) P_0(tt2);
-
-// Update the destination register - swap back to big endian
-let result : bits(256) = {rev8(G1) @ rev8(G2) @ rev8(E1) @ rev8(E2) @ rev8(C1) @ rev8(C2) @ rev8(A1) @ rev8(A2)};
-set_velem(vd, 256, i, result);
-      }
-
-RETIRE_SUCCESS
-  }
-}
-
-function FF1(X, Y, Z) = ((X) ^ (Y) ^ (Z))
-function FF2(X, Y, Z) = (((X) & (Y)) | ((X) & (Z)) | ((Y) & (Z)))
-
-function FF_j(X, Y, Z, J) = (((J) <= 15) ? FF1(X, Y, Z) : FF2(X, Y, Z))
-
-function GG1(X, Y, Z) = ((X) ^ (Y) ^ (Z))
-function GG2(X, Y, Z) = (((X) & (Y)) | ((~(X)) & (Z)))
-.
-function GG_j(X, Y, Z, J) = (((J) <= 15) ? GG1(X, Y, Z) : GG2(X, Y, Z))
-
-function T_j(J) = (((J) <= 15) ? (0x79CC4519) : (0x7A879D8A))
-
-function P_0(X) = ((X) ^ ROL32((X),  9) ^ ROL32((X), 17))
-
+include::sail:execute[clause="VSM3C_VI(_, _, _)"]
+include::sail:vrev8[type=val]
+include::sail:vrev8[]
+include::sail:zvk_sm3_round[]
+include::sail:zvk_t_j[]
+include::sail:zvk_gg_j[]
+include::sail:zvk_ff_j[]
+include::sail:zvk_gg1[]
+include::sail:zvk_gg2[]
+include::sail:zvk_ff1[]
+include::sail:zvk_ff2[]
+include::sail:zvk_p0[]
 --
 
 Included in::
@@ -3541,69 +3240,9 @@ values to be preserved for generating the next 8 words.
 Operation::
 [source,sail]
 --
-function clause execute (VSM3ME(vs2, vs1)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  foreach (i from eg_start to eg_len-1) {
-    let w[7:0]  : bits(256) = get_velem(vs1, 256, i);
-    let w[15:8] : bits(256) = get_velem(vs2, 256, i);
-
-    // Byte Swap inputs from big-endian to little-endian
-    let w15 = rev8(w[15]);
-    let w14 = rev8(w[14]);
-    let w13 = rev8(w[13]);
-    let w12 = rev8(w[12]);
-    let w11 = rev8(w[11]);
-    let w10 = rev8(w[10]);
-    let w9  = rev8(w[9]);
-    let w8  = rev8(w[8]);
-    let w7  = rev8(w[7]);
-    let w6  = rev8(w[6]);
-    let w5  = rev8(w[5]);
-    let w4  = rev8(w[4]);
-    let w3  = rev8(w[3]);
-    let w2  = rev8(w[2]);
-    let w1  = rev8(w[1]);
-    let w0  = rev8(w[0]);
-
-    // Note that some of the newly computed words are used in later invocations.
-    let w[16] = ZVKSH_W(w0 @  w7 @  w13 @   w3 @  w10);
-    let w[17] = ZVKSH_W(w1 @  w8 @  w14 @   w4 @  w11);
-    let w[18] = ZVKSH_W(w2 @  w9 @  w15 @   w5 @  w12);
-    let w[19] = ZVKSH_W(w3 @ w10 @  w16 @   w6 @  w13);
-    let w[20] = ZVKSH_W(w4 @ w11 @  w17 @   w7 @  w14);
-    let w[21] = ZVKSH_W(w5 @ w12 @  w18 @   w8 @  w15);
-    let w[22] = ZVKSH_W(w6 @ w13 @  w19 @   w9 @  w16);
-    let w[23] = ZVKSH_W(w7 @ w14 @  w20 @  w10 @  w17);
-
-  // Byte swap outputs from little-endian back to big-endian
-    let w16 : Bits(32) = rev8(W[16]);
-    let w17 : Bits(32) = rev8(W[17]);
-    let w18 : Bits(32) = rev8(W[18]);
-    let w19 : Bits(32) = rev8(W[19]);
-    let w20 : Bits(32) = rev8(W[20]);
-    let w21 : Bits(32) = rev8(W[21]);
-    let w22 : Bits(32) = rev8(W[22]);
-    let w23 : Bits(32) = rev8(W[23]);
-
-
-    // Update the destination register.
-    set_velem(vd, 256, i, {w23 @ w22 @ w21 @ w20 @ w19 @ w18 @ w17 @ w16});
-  }
-  RETIRE_SUCCESS
-  }
-}
-
-  function P_1(X) ((X) ^ ROL32((X), 15) ^ ROL32((X), 23))
-
-  function ZVKSH_W(M16, M9, M3, M13, M6) = \
-  (P1( (M16) ^  (M9) ^ ROL32((M3), 15) ) ^ ROL32((M13), 7) ^ (M6))
+include::sail:execute[clause="VSM3ME_VV(_, _, _)"]
+include::sail:zvk_sh_w[]
+include::sail:zvk_p1[]
 --
 
 Included in::
@@ -3760,67 +3399,12 @@ Since the results are all limited to 8 bits, the modulo operation occurs for fre
 Operation::
 [source,sail]
 --
-
-function clause execute (vsm4k(uimm, vs2)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
-  let B : bits(32) = 0;
-  let S : bits(32) = 0;
-  let rk4 : bits(32) = 0;
-  let rk5 : bits(32) = 0;
-  let rk6 : bits(32) = 0;
-  let rk7 : bits(32) = 0;
-  let rnd : bits(3) = uimm[2:0]; // Lower 3 bits
-
-  foreach (i from eg_start to eg_len-1) {
-    let (rk3 @ rk2 @ rk1 @ rk0) : bits(128) = get_velem(vs2, 128, i);
-
-    B = rk1 ^ rk2 ^ rk3 ^ ck(4 * rnd);
-    S = sm4_subword(B);
-    rk4 = ROUND_KEY(rk0, S);
-
-    B = rk2 ^ rk3 ^ rk4 ^ ck(4 * rnd + 1);
-    S = sm4_subword(B);
-    rk5 = ROUND_KEY(rk1, S);
-
-    B = rk3 ^ rk4 ^ rk5 ^ ck(4 * rnd + 2);
-    S = sm4_subword(B);
-    rk6 = ROUND_KEY(rk2, S);
-
-    B = rk4 ^ rk5 ^ rk6 ^ ck(4 * rnd + 3);
-    S = sm4_subword(B);
-    rk7 = ROUND_KEY(rk3, S);
-
-    // Update the destination register.
-   set_velem(vd, EGW=128, i, (rk7 @ rk6 @ rk5 @ rk4));
-  }
-  RETIRE_SUCCESS
-  }
-}
-
-val round_key : bits(32) -> bits(32)
-function ROUND_KEY(X, S) = ((X) ^ ((S) ^ ROL32((S), 13) ^ ROL32((S), 23)))
-
-// SM4 Constant Key (CK)
-let ck : list(bits(32)) = [|
- 0x00070E15, 0x1C232A31, 0x383F464D, 0x545B6269,
- 0x70777E85, 0x8C939AA1, 0xA8AFB6BD, 0xC4CBD2D9,
- 0xE0E7EEF5, 0xFC030A11, 0x181F262D, 0x343B4249,
- 0x50575E65, 0x6C737A81, 0x888F969D, 0xA4ABB2B9,
- 0xC0C7CED5, 0xDCE3EAF1, 0xF8FF060D, 0x141B2229,
- 0x30373E45, 0x4C535A61, 0x686F767D, 0x848B9299,
- 0xA0A7AEB5, 0xBCC3CAD1, 0xD8DFE6ED, 0xF4FB0209,
- 0x10171E25, 0x2C333A41, 0x484F565D, 0x646B7279
-  |]
-};
-
-
+include::sail:execute[clause="VSM4K_VI(_, _, _)"]
+include::sail:zvk_round_key[]
+include::sail:zvk_sm4_subword[]
+include::sail:zvk_sm4_sbox[]
+include::sail:zvksed_box_lookup[]
+include::sail:zvksed_ck[type=let]
 --
 
 Included in::
@@ -3918,66 +3502,10 @@ previous four rounds.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
-[source,pseudocode]
+[source,sail]
 --
-function clause execute (VSM4R(vd, vs2)) = {
-  if(LMUL*VLEN < EGW)  then {
-    handle_illegal();  // illegal-instruction exception
-    RETIRE_FAIL
-  } else {
-
-  eg_len = (vl/EGS)
-  eg_start = (vstart/EGS)
-
- let B  : bits(32) = 0;
- let S  : bits(32) = 0;
- let rk0 : bits(32) = 0;
- let rk1 : bits(32) = 0;
- let rk2 : bits(32) = 0;
- let rk3 : bits(32) = 0;
- let x0 : bits(32) = 0;
- let x1 : bits(32) = 0;
- let x2 : bits(32) = 0;
- let x3 : bits(32) = 0;
- let x4 : bits(32) = 0;
- let x5 : bits(32) = 0;
- let x6 : bits(32) = 0;
- let x7 : bits(32) = 0;
-
- let keyelem : bits(32) = 0;
-
-  foreach (i from eg_start to eg_len-1) {
-    keyelem = if suffix == "vv" then i else 0;
-    {rk3 @ rk2 @ rk1 @ rk0} : bits(128) = get_velem(vs2, EGW=128, keyelem);
-    {x3 @ x2 @ x1 @ x0} : bits(128) = get_velem(vd, EGW=128, i);
-
-    B  = x1 ^ x2 ^ x3 ^ rk0;
-    S = sm4_subword(B);
-    x4 = sm4_round(x0, S);
-
-    B = x2 ^ x3 ^ x4 ^ rk1;
-    S = sm4_subword(B);
-    x5= sm4_round(x1, S);
-
-    B = x3 ^ x4 ^ x5 ^ rk2;
-    S = sm4_subword(B);
-    x6 = sm4_round(x2, S);
-
-    B = x4 ^ x5 ^ x6 ^ rk3;
-    S = sm4_subword(B);
-    x7 = sm4_round(x3, S);
-
-    set_velem(vd, EGW=128, i, (x7 @ x6 @ x5 @ x4));
-
-  }
-  RETIRE_SUCCESS
-  }
-}
-
-val sm4_round : bits(32) -> bits(32)
-function sm4_round(X, S) = \
-  ((X) ^ ((S) ^ ROL32((S), 2) ^ ROL32((S), 10) ^ ROL32((S), 18) ^ ROL32((S), 24)))
-
+include::sail:execute[clause="ZVKSM4RTYPE(_, _, _)"]
+include::sail:zvk_sm4_round[]
 --
 
 Included in::
