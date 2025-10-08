@@ -4123,56 +4123,17 @@ include::sailcomment:aes_mixcolumns_inv[]
 
 sail::aes_mixcolumns_inv[part=source]
 
-[source,sail]
-----
-/* Performs the word rotation for AES key schedule
-*/
+sail::brev8[type=val,part=source]
 
-val aes_rotword : bits(32) -> bits(32)
-function aes_rotword(x) = {
-  let a0 : bits (8) = x[ 7.. 0];
-  let a1 : bits (8) = x[15.. 8];
-  let a2 : bits (8) = x[23..16];
-  let a3 : bits (8) = x[31..24];
-  (a0 @ a3 @ a2 @ a1) /* Return Value */
-}
+sail::brev8[part=source]
 
-val brev : bits(SEW) -> bits(SEW)
-function brev(x) = {
-  let output : bits(SEW) = 0;
-  foreach (i from 0 to SEW-8 by 8)
-    output[i+7..i] = reverse_bits_in_byte(input[i+7..i]);
-  output /* Return Value */
-}
+sail::reverse_bits[type=val,part=source]
 
-val reverse_bits_in_byte : bits(8) -> bits(8)
-function reverse_bits_in_byte(x) = {
-  let output : bits(8) = 0;
-  foreach (i from 0 to 7)
-    output[i] = x[7-i]);
-  output /* Return Value */
-}
+sail::reverse_bits[part=source]
 
-val rev8 : bits(SEW) -> bits(SEW)
-function rev8(x) = {     // endian swap
-  let output : bits(SEW) = 0;
-    let j = SEW - 1;
-    foreach (k from 0 to (SEW - 8) by 8) {
-      output[k..(k + 7)] = x[(j - 7)..j];
-      j = j - 8;
-  output /* Return Value */
-  }
-  RETIRE_SUCCESS
+sail::rev8[type=val,part=source]
 
+sail::rev8[part=source]
 
-val rol32 : bits(32) -> bits(32)
-function ROL32(x,n) = (X << N) | (X >> (32 - N))
+sail::zvk_sm4_subword[part=source]
 
-val sm4_subword : bits(32) -> bits(32)
-function sm4_subword(x) = {
-  sm4_sbox(x[31..24]) @
-  sm4_sbox(x[23..16]) @
-  sm4_sbox(x[15.. 8]) @
-  sm4_sbox(x[ 7.. 0])
-}
-----
