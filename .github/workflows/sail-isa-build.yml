@@ -1,0 +1,57 @@
+---
+name: Build and publish (sail branch)
+
+# This builds the HTML and deploys it to Github pages
+# whenever a commit is pushed to the `sail` branch.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build HTML
+        run: |
+          make build-html
+
+      # Create directory structure pages sites for privileged and unprivileged specs.
+      - name: Make GitHub pages directory
+        run: |
+          cp -r pages dist
+          cp build/riscv-unprivileged.html dist/riscv-unprivileged.html
+          cp build/riscv-privileged.html dist/riscv-privileged.html
+          cp --recursive build/html_docs dist/html_docs
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  # Deploy HTML to GitHub pages.
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

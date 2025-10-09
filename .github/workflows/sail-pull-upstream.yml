@@ -1,0 +1,44 @@
+---
+name: Merge upstream
+
+# This merges upstream `main` branch into the `sail` branch.
+
+on:
+  schedule:
+    - cron: 42 1 * * *   # 01:42 every day.
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Full depth needed otherwise Git refuses to merge unrelated histories.
+          # We probably could override it but this seems safer.
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/riscv/riscv-isa-manual.git
+          git fetch upstream
+
+      - name: Merge upstream/main into current branch
+        run: |
+          git merge --no-edit upstream/main
+        # If merge fails, workflow will stop here due to non-zero exit code
+
+      - name: Push merged branch back to fork
+        run: |
+          git push origin HEAD
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
