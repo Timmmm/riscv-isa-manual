@@ -7,7 +7,7 @@ name: Build and publish (sail branch)
 on:
   push:
     branches:
-      - main
+      - sail
   workflow_dispatch:
 
 jobs:
