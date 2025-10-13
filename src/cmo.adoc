@@ -819,6 +819,14 @@ Encoding::
 ]}
 ....
 
+include::sailwavedrom:encdec[left-clause="ZICBOM(_,_)",type=mapping,right]
+
+where `CBO-OP = CBO_CLEAN` and
+[source,sail]
+----
+include::sail:encdec_cbop[type=mapping,left-clause="CBO_CLEAN"]
+----
+
 Description::
 
 A *cbo.clean* instruction performs a clean operation on the cache block whose
@@ -856,6 +864,14 @@ Encoding::
 ]}
 ....
 
+include::sailwavedrom:encdec[left-clause="ZICBOM(_,_)",type=mapping,right]
+
+where `CBO-OP = CBO_FLUSH` and
+[source,sail]
+----
+include::sail:encdec_cbop[type=mapping,left-clause="CBO_FLUSH"]
+----
+
 Description::
 
 A *cbo.flush* instruction performs a flush operation on the cache block whose
@@ -888,6 +904,14 @@ Encoding::
  { bits: 12, name: 0x000, attr: ['CBO.INVAL'] },
 ]}
 ....
+
+include::sailwavedrom:encdec[left-clause="ZICBOM(_,_)",type=mapping,right]
+
+where `CBO-OP = CBO_INVAL` and
+[source,sail]
+----
+include::sail:encdec_cbop[type=mapping,left-clause="CBO_INVAL"]
+----
 
 Description::
 
@@ -933,6 +957,8 @@ Encoding::
 ]}
 ....
 
+include::sailwavedrom:encdec[left-clause="ZICBOZ(_)",type=mapping,right]
+
 Description::
 
 A *cbo.zero* instruction performs stores of zeros to the full set of bytes
@@ -967,6 +993,14 @@ Encoding::
  { bits: 7, name: 'imm[11:5]',  attr: ['offset[11:5]'] },
 ]}
 ....
+
+include::sailwavedrom:encdec[left-clause="ZICBOP(_,_,_)",type=mapping,right]
+
+where `PREFETCH-OP = PREFETCH_I` and
+[source,sail]
+----
+include::sail:encdec_cbop_zicbop[type=mapping,left-clause="PREFETCH_I"]
+----
 
 Description::
 
@@ -1005,6 +1039,14 @@ Encoding::
 ]}
 ....
 
+include::sailwavedrom:encdec[left-clause="ZICBOP(_,_,_)",type=mapping,right]
+
+where `PREFETCH-OP = PREFETCH_R` and
+[source,sail]
+----
+include::sail:encdec_cbop_zicbop[type=mapping,left-clause="PREFETCH_R"]
+----
+
 Description::
 
 A *prefetch.r* instruction indicates to hardware that the cache block whose
@@ -1041,6 +1083,14 @@ Encoding::
  { bits: 7, name: 'imm[11:5]',  attr: ['offset[11:5]'] },
 ]}
 ....
+
+include::sailwavedrom:encdec[left-clause="ZICBOP(_,_,_)",type=mapping,right]
+
+where `PREFETCH-OP = PREFETCH_W` and
+[source,sail]
+----
+include::sail:encdec_cbop_zicbop[type=mapping,left-clause="PREFETCH_W"]
+----
 
 Description::
 

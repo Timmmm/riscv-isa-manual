@@ -455,6 +455,9 @@ include::images/wavedrom/ct-unconditional.edn[]
 [[ct-unconditional]]
 //.The unconditional-jump instruction, JAL
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="JAL(_,_)",type=mapping,right]
+
 The indirect jump instruction JALR (jump and link register) uses the I-type encoding.
 [#norm:jalr_target]#The target address is obtained by adding the
 sign-extended 12-bit I-immediate to the register _rs1_, then setting the
@@ -473,6 +476,9 @@ _imm_=0.
 include::images/wavedrom/ct-unconditional-2.edn[]
 [[ct-unconditional-2]]
 //.The indirect unconditional-jump instruction, JALR
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="JALR(_,_)",type=mapping,right]
 
 [NOTE]
 ====
@@ -707,6 +713,10 @@ memory byte addresses to the less-significant register bytes.
 include::images/wavedrom/load-store.edn[]
 [[load-store,load and store]]
 //.Load and store instructions
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="LOAD(_,_,_,_,_)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="STORE(_,_,_,_)",type=mapping,right]
 
 Load and store instructions transfer a value between the registers and
 memory. Loads are encoded in the I-type format and stores are S-type.

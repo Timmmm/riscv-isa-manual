@@ -471,6 +471,8 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="FCVT_BF16_S(_,_,_)",type=mapping,right]
 
 [NOTE]
 ====
@@ -518,6 +520,9 @@ Encoding::
 {bits: 5, name: '01000', attr: 'fcvt'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="FCVT_S_BF16(_,_,_)",type=mapping,right]
 
 [NOTE]
 ====
@@ -576,6 +581,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VFNCVTBF16_F_F_W(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 16
 
@@ -632,6 +640,9 @@ Encoding::
 {bits: 6, name: '010010', attr:['VFUNARY0']},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VFWCVTBF16_F_F_V(_,_,_)",type=mapping,right]
 
 Reserved Encodings::
 * `SEW` is any value other than 16
@@ -695,6 +706,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VFWMACCBF16_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -708,6 +722,9 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '111011', attr:['vfwmaccbf16']},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VFWMACCBF16_VF(_,_,_,_)",type=mapping,right]
 
 Reserved Encodings::
 * `SEW` is any value other than 16

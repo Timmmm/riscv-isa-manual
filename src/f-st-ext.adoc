@@ -235,6 +235,10 @@ include::images/wavedrom/sp-load-store-2.edn[]
 [[sp-ldst]]
 //.SP load and store
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="LOAD_FP(_,_,_,_)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="STORE_FP(_,_,_,_)",type=mapping,right]
+
 FLW and FSW are only guaranteed to execute atomically if the effective
 address is naturally aligned.
 

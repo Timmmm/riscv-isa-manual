@@ -354,6 +354,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_LBU(_,_,_)",type=mapping,right]
+
 The immediate offset is formed as follows:
 
 [source,sail]
@@ -408,6 +411,9 @@ Encoding (RV32, RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_LHU(_,_,_)",type=mapping,right]
 
 The immediate offset is formed as follows:
 
@@ -465,6 +471,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_LH(_,_,_)",type=mapping,right]
+
 The immediate offset is formed as follows:
 
 [source,sail]
@@ -519,6 +528,9 @@ Encoding (RV32, RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_SB(_,_,_)",type=mapping,right]
 
 The immediate offset is formed as follows:
 
@@ -577,6 +589,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_SH(_,_,_)",type=mapping,right]
+
 The immediate offset is formed as follows:
 
 [source,sail]
@@ -632,6 +647,9 @@ Encoding (RV32, RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_ZEXT_B(_)",type=mapping,right]
 
 Description::
 
@@ -690,6 +708,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_SEXT_B(_)",type=mapping,right]
+
 Description::
 
 This instruction takes a single source/destination operand.
@@ -742,6 +763,9 @@ Encoding (RV32, RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_ZEXT_H(_)",type=mapping,right]
 
 Description::
 
@@ -797,6 +821,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_SEXT_H(_)",type=mapping,right]
+
 Description::
 
 This instruction takes a single source/destination operand.
@@ -850,6 +877,9 @@ Encoding (RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_ZEXT_W(_)",type=mapping,right]
 
 Description::
 
@@ -908,6 +938,9 @@ Encoding (RV32, RV64):
 ],config:{bits:16}}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_NOT(_)",type=mapping,right]
+
 Description::
 
 This instruction takes the one's complement of _rd'/rs1'_ and writes the result to the same register.
@@ -962,6 +995,9 @@ Encoding (RV32, RV64):
     { bits:  3, name: 0x4, attr: ['FUNCT3'] },
 ],config:{bits:16}}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec_compressed[left-clause="C_MUL(_)",type=mapping,right]
 
 Description::
 
