@@ -1018,6 +1018,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBA_RTYPEUW(_,_,_,_)",type=mapping,right]
+
 Description::
 This instruction performs an XLEN-wide addition between _rs2_ and the zero-extended least-significant word of _rs1_.
 
@@ -1065,6 +1068,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ANDN)",type=mapping,right]
+
 Description::
 This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise inversion of _rs2_.
 
@@ -1110,6 +1116,9 @@ Encoding::
     { bits:  7, name: 0x24, attr: ['BCLR/BEXT'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BCLR)",type=mapping,right]
 
 Description::
 This instruction returns _rs1_ with a single bit cleared at the index specified in _rs2_.
@@ -1167,6 +1176,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BCLRI)",type=mapping,right]
+
 Description::
 This instruction returns _rs1_ with a single bit cleared at the index specified in _shamt_.
 The index is read from the lower log2(XLEN) bits of _shamt_.
@@ -1211,6 +1223,9 @@ Encoding::
     { bits:  7, name: 0x24, attr: ['BCLR/BEXT'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BEXT)",type=mapping,right]
 
 Description::
 This instruction returns a single bit extracted from _rs1_ at the index specified in _rs2_.
@@ -1268,6 +1283,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BEXTI)",type=mapping,right]
+
 Description::
 This instruction returns a single bit extracted from _rs1_ at the index specified in _shamt_.
 The index is read from the lower log2(XLEN) bits of _shamt_.
@@ -1311,6 +1329,9 @@ Encoding::
     { bits:  7, name: 0x34, attr: ['BINV'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BINV)",type=mapping,right]
 
 Description::
 This instruction returns _rs1_ with a single bit inverted at the index specified in _rs2_.
@@ -1368,6 +1389,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BINVI)",type=mapping,right]
+
 Description::
 This instruction returns _rs1_ with a single bit inverted at the index specified in _shamt_.
 The index is read from the lower log2(XLEN) bits of _shamt_.
@@ -1411,6 +1435,9 @@ Encoding::
     { bits:  7, name: 0x14, attr: ['BSET'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BSET)",type=mapping,right]
 
 Description::
 This instruction returns _rs1_ with a single bit set at the index specified in _rs2_.
@@ -1468,6 +1495,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BSETI)",type=mapping,right]
+
 Description::
 This instruction returns _rs1_ with a single bit set at the index specified in _shamt_.
 The index is read from the lower log2(XLEN) bits of _shamt_.
@@ -1511,6 +1541,9 @@ Encoding::
     { bits:  7, name: 0x5, attr: ['MINMAX/CLMUL'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMUL(_,_,_)",type=mapping,right]
 
 Description::
 clmul produces the lower half of the 2·XLEN carry-less product.
@@ -1558,6 +1591,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMULH(_,_,_)",type=mapping,right]
+
 Description::
 clmulh produces the upper half of the 2·XLEN carry-less product.
 
@@ -1604,6 +1640,9 @@ Encoding::
     { bits:  7, name: 0x5, attr: ['MINMAX/CLMUL'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMULR(_,_,_)",type=mapping,right]
 
 Description::
 *clmulr* produces bits 2·XLEN−2:XLEN-1 of the 2·XLEN carry-less
@@ -1657,6 +1696,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLZ(_,_)",type=mapping,right]
+
 Description::
 This instruction counts the number of 0's before the first 1, starting at the most-significant bit (i.e., XLEN-1) and progressing to bit 0. Accordingly, if the input is 0, the output is XLEN, and if the most-significant bit of the input is a 1, the output is 0.
 
@@ -1698,6 +1740,9 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['CLZW'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLZW(_,_)",type=mapping,right]
 
 Description::
 This instruction counts the number of 0's before the first 1 starting at bit 31 and progressing to bit 0.
@@ -1741,6 +1786,10 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['CPOP'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CPOP(_,_)",type=mapping,right]
+
 Description::
 This instructions counts the number of 1's (i.e., set bits) in the source register.
 
@@ -1791,6 +1840,10 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['CPOPW'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CPOPW(_,_)",type=mapping,right]
+
 Description::
 This instructions counts the number of 1's (i.e., set bits) in the least-significant word of the source register.
 
@@ -1832,6 +1885,9 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['CTZ/CTZW'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CTZ(_,_)",type=mapping,right]
 
 Description::
 This instruction counts the number of 0's before the first 1, starting at the least-significant bit (i.e., 0) and progressing to the most-significant bit (i.e., XLEN-1).
@@ -1876,6 +1932,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CTZW(_,_)",type=mapping,right]
+
 Description::
 This instruction counts the number of 0's before the first 1, starting at the least-significant bit (i.e., 0) and progressing to the most-significant bit of the least-significant word (i.e., 31). Accordingly, if the least-significant word is 0, the output is 32, and if the least-significant bit of the input is a 1, the output is 0.
 
@@ -1917,6 +1976,9 @@ Encoding::
     { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MAX)",type=mapping,right]
 
 Description::
 This instruction returns the larger of two signed integers.
@@ -1970,6 +2032,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MAXU)",type=mapping,right]
+
 Description::
 This instruction returns the larger of two unsigned integers.
 
@@ -2011,6 +2076,9 @@ Encoding::
     { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MIN)",type=mapping,right]
 
 Description::
 This instruction returns the smaller of two signed integers.
@@ -2054,6 +2122,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MINU)",type=mapping,right]
+
 Description::
 This instruction returns the smaller of two unsigned integers.
 
@@ -2094,6 +2165,9 @@ Encoding::
     { bits: 12, name: 0x287 }
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ORCB(_,_)",type=mapping,right]
 
 Description::
 Combines the bits within each byte using bitwise logical OR.
@@ -2137,6 +2211,9 @@ Encoding::
     { bits:  7, name: 0x20, attr: ['ORN'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ORN)",type=mapping,right]
 
 Description::
 This instruction performs the bitwise logical OR operation between _rs1_ and the bitwise inversion of _rs2_.
@@ -2183,6 +2260,9 @@ Encoding::
     {bits: 7, name: 0x4, attr:['PACK']},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACK)",type=mapping,right]
 
 Description::
 The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
@@ -2234,6 +2314,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACKH)",type=mapping,right]
+
 Description::
 The packh instruction packs the least-significant bytes of
 _rs1_ and _rs2_ into the 16 least-significant bits of _rd_,
@@ -2277,6 +2360,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_PACKW(_,_,_)",type=mapping,right]
 
 Description::
 This instruction packs the low 16 bits of
@@ -2341,6 +2427,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="REV8(_,_)",type=mapping,right]
+
 Description::
 This instruction reverses the order of the bytes in _rs_.
 
@@ -2401,6 +2490,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="BREV8(_,_)",type=mapping,right]
+
 Description::
 This instruction reverses the order of the bits in every byte of a register.
 
@@ -2442,6 +2534,9 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['ROL'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ROL)",type=mapping,right]
 
 Description::
 This instruction performs a rotate left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
@@ -2489,6 +2584,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPEW(_,_,_,ROLW)",type=mapping,right]
+
 Description::
 This instruction performs a rotate left on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
 The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits.
@@ -2535,6 +2633,9 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['ROR'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ROR)",type=mapping,right]
 
 Description::
 This instruction performs a rotate right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
@@ -2595,6 +2696,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="RORI(_,_,_)",type=mapping,right]
+
 Description::
 This instruction performs a rotate right of _rs1_ by the amount in the least-significant log2(XLEN) bits of _shamt_.
 For RV32, the encodings corresponding to shamt[5]=1 are reserved.
@@ -2641,6 +2745,9 @@ Encoding::
     { bits:  7, name: 0x30, attr: ['RORIW'] },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="RORIW(_,_,_)",type=mapping,right]
 
 Description::
 This instruction performs a rotate right on the least-significant word
@@ -2693,6 +2800,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPEW(_,_,_,RORW)",type=mapping,right]
+
 Description::
 This instruction performs a rotate right on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
 The resultant word is sign-extended by copying bit 31 to all of the more-significant bits.
@@ -2740,6 +2850,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,SEXTB)",type=mapping,right]
+
 Description::
 This instruction sign-extends the least-significant byte in the source to XLEN by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-significant bits.
 
@@ -2781,6 +2894,9 @@ Encoding::
     { bits:  7, name: 0x30 },
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,SEXTH)",type=mapping,right]
 
 Description::
 This instruction sign-extends the least-significant halfword in _rs_ to XLEN by copying the most-significant bit in the halfword (i.e., bit 15) to all of the more-significant bits.
@@ -3103,6 +3219,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SLLIUW(_,_,_)",type=mapping,right]
+
 Description::
 This instruction takes the least-significant word of _rs1_, zero-extends it, and shifts it left by the immediate.
 
@@ -3151,6 +3270,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="UNZIP(_,_)",type=mapping,right]
 
 Description::
 This instruction scatters all of the odd and even bits of a source word into
@@ -3206,6 +3328,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,XNOR)",type=mapping,right]
+
 Description::
 This instruction performs the bit-wise exclusive-NOR operation on _rs1_ and _rs2_.
 
@@ -3252,6 +3377,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM8(_,_,_)",type=mapping,right]
+
 Description::
 The xperm8 instruction operates on bytes.
 The _rs1_ register contains a vector of XLEN/8 8-bit elements.
@@ -3297,6 +3425,9 @@ Encoding::
 {bits: 7, name: 0x14},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM4(_,_,_)",type=mapping,right]
 
 Description::
 The xperm4 instruction operates on nibbles.
@@ -3357,6 +3488,9 @@ Encoding (RV64)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,ZEXTH)",type=mapping,right]
+
 Description::
 This instruction zero-extends the least-significant halfword of the source to XLEN by inserting 0's into all of the bits more significant than 15.
 
@@ -3405,6 +3539,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZIP(_,_)",type=mapping,right]
 
 Description::
 This instruction gathers bits from the high and low halves of the source

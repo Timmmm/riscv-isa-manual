@@ -107,6 +107,10 @@ include::images/wavedrom/double-ls.edn[]
 [[double-ls]]
 //.Double-precision load and store
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="LOAD_FP(_,_,_,_)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="STORE_FP(_,_,_,_)",type=mapping,right]
+
 FLD and FSD are only guaranteed to execute atomically if the effective
 address is naturally aligned and XLEN&#8805;64.
 

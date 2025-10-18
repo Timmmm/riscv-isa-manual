@@ -436,6 +436,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES32DSI(_,_,_,_)",type=mapping,right]
+
 Description::
 This instruction sources a single byte from `rs2` according to `bs`.
 To this it applies the inverse AES SBox operation, and XOR's the result with
@@ -489,6 +492,9 @@ Encoding::
 {bits: 2, name: 'bs'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES32DSMI(_,_,_,_)",type=mapping,right]
 
 Description::
 This instruction sources a single byte from `rs2` according to `bs`.
@@ -544,6 +550,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES32ESI(_,_,_,_)",type=mapping,right]
+
 Description::
 This instruction sources a single byte from `rs2` according to `bs`.
 To this it applies the forward AES SBox operation,
@@ -598,6 +607,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES32ESMI(_,_,_,_)",type=mapping,right]
+
 Description::
 This instruction sources a single byte from `rs2` according to `bs`.
 To this it applies the forward AES SBox operation, and a partial forward
@@ -651,6 +663,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64DS(_,_,_)",type=mapping,right]
 
 Description::
 Uses the two 64-bit source registers to represent the entire AES state,
@@ -719,6 +734,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64DSM(_,_,_)",type=mapping,right]
+
 Description::
 Uses the two 64-bit source registers to represent the entire AES state,
 and produces _half_ of the next round output, applying the Inverse ShiftRows,
@@ -786,6 +804,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64ES(_,_,_)",type=mapping,right]
+
 Description::
 Uses the two 64-bit source registers to represent the entire AES state,
 and produces _half_ of the next round output, applying the ShiftRows and
@@ -852,6 +873,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64ESM(_,_,_)",type=mapping,right]
 
 Description::
 Uses the two 64-bit source registers to represent the entire AES state,
@@ -921,6 +945,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64IM(_,_)",type=mapping,right]
+
 Description::
 The instruction applies the inverse MixColumns
 transformation to two columns of the state array, packed into a single
@@ -980,6 +1007,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64KS1I(_,_,_)",type=mapping,right]
+
 Description::
 This instruction implements the rotation, SubBytes and Round Constant
 addition steps of the AES block cipher Key Schedule.
@@ -1038,6 +1068,9 @@ Encoding::
 {bits: 2, name: 0x1},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="AES64KS2(_,_,_)",type=mapping,right]
 
 Description::
 This instruction implements the additional XOR'ing of key words as
@@ -1139,6 +1172,9 @@ Encoding::
     { bits: 12, name: 0x687 }
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="BREV8(_,_)",type=mapping,right]
 
 Description::
 This instruction reverses the order of the bits in every byte of a register.
@@ -1324,6 +1360,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACK)",type=mapping,right]
+
 Description::
 The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
 _rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
@@ -1367,6 +1406,9 @@ Encoding::
     {bits: 7, name: 0x4, attr: ['PACKH']},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACKH)",type=mapping,right]
 
 Description::
 And the packh instruction packs the least-significant bytes of
@@ -1413,6 +1455,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_PACKW(_,_,_)",type=mapping,right]
 
 Description::
 This instruction packs the low 16 bits of
@@ -1838,6 +1883,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA256SIG0(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for both RV32 and RV64 base architectures.
 For RV32, the entire `XLEN` source register is operated on.
@@ -1896,6 +1944,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA256SIG1(_,_)",type=mapping,right]
 
 Description::
 This instruction is supported for both RV32 and RV64 base architectures.
@@ -1956,6 +2007,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA256SUM0(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for both RV32 and RV64 base architectures.
 For RV32, the entire `XLEN` source register is operated on.
@@ -2015,6 +2069,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA256SUM1(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for both RV32 and RV64 base architectures.
 For RV32, the entire `XLEN` source register is operated on.
@@ -2073,6 +2130,9 @@ Encoding::
 {bits: 2, name: 0x1},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG0H(_,_,_)",type=mapping,right]
 
 Description::
 This instruction is implemented on RV32 only.
@@ -2142,6 +2202,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG0L(_,_,_)",type=mapping,right]
+
 Description::
 This instruction is implemented on RV32 only.
 Used to compute the Sigma0 transform of the SHA2-512 hash function
@@ -2209,6 +2272,9 @@ Encoding::
 {bits: 2, name: 0x1},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG1H(_,_,_)",type=mapping,right]
 
 Description::
 This instruction is implemented on RV32 only.
@@ -2278,6 +2344,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG1L(_,_,_)",type=mapping,right]
+
 Description::
 This instruction is implemented on RV32 only.
 Used to compute the Sigma1 transform of the SHA2-512 hash function
@@ -2345,6 +2414,9 @@ Encoding::
 {bits: 2, name: 0x1},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SUM0R(_,_,_)",type=mapping,right]
 
 Description::
 This instruction is implemented on RV32 only.
@@ -2414,6 +2486,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SUM1R(_,_,_)",type=mapping,right]
+
 Description::
 This instruction is implemented on RV32 only.
 Used to compute the Sum1 transform of the SHA2-512 hash function.
@@ -2482,6 +2557,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG0(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for the RV64 base architecture.
 It implements the Sigma0 transform of the SHA2-512 hash function.
@@ -2536,6 +2614,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SIG1(_,_)",type=mapping,right]
 
 Description::
 This instruction is supported for the RV64 base architecture.
@@ -2592,6 +2673,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SUM0(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for the RV64 base architecture.
 It implements the Sum0 transform of the SHA2-512 hash function.
@@ -2647,6 +2731,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SHA512SUM1(_,_)",type=mapping,right]
+
 Description::
 This instruction is supported for the RV64 base architecture.
 It implements the Sum1 transform of the SHA2-512 hash function.
@@ -2701,6 +2788,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SM3P0(_,_)",type=mapping,right]
 
 Description::
 This instruction is supported for the RV32 and RV64 base architectures.
@@ -2758,6 +2848,9 @@ Encoding::
 {bits: 2, name: 0x0},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SM3P1(_,_)",type=mapping,right]
 
 Description::
 This instruction is supported for the RV32 and RV64 base architectures.
@@ -2817,6 +2910,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SM4ED(_,_,_,_)",type=mapping,right]
+
 Description::
 Implements a T-tables in hardware style approach to accelerating the
 SM4 round function.
@@ -2873,6 +2969,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SM4KS(_,_,_,_)",type=mapping,right]
+
 Description::
 Implements a T-tables in hardware style approach to accelerating the
 SM4 Key Schedule.
@@ -2928,6 +3027,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="UNZIP(_,_)",type=mapping,right]
 
 Description::
 This instruction scatters all of the odd and even bits of a source word into
@@ -3031,6 +3133,9 @@ Encoding::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM8(_,_,_)",type=mapping,right]
+
 Description::
 The xperm8 instruction operates on bytes.
 The _rs1_ register contains a vector of XLEN/8 8-bit elements.
@@ -3078,6 +3183,9 @@ Encoding::
 {bits: 7, name: 0x14},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM4(_,_,_)",type=mapping,right]
 
 Description::
 The xperm4 instruction operates on nibbles.
@@ -3127,6 +3235,9 @@ Encoding::
 {bits: 7, name: 0x4},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZIP(_,_)",type=mapping,right]
 
 Description::
 This instruction gathers bits from the high and low halves of the source

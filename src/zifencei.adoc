@@ -66,6 +66,9 @@ include::images/wavedrom/zifencei-ff.edn[]
 //.FENCE.I instruction
 (((FENCE.I, synchronization)))
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="FENCEI()",type=mapping,right]
+
 The FENCE.I instruction is used to synchronize the instruction and data
 streams. RISC-V does not guarantee that stores to instruction memory
 will be made visible to instruction fetches on a RISC-V hart until that

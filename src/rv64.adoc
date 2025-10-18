@@ -43,6 +43,9 @@ include::images/wavedrom/rv64i-base-int.edn[]
 [[rv64i-base-int]]
 //.RV64I register-immediate instructions
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ADDIW(_,_,_)",type=mapping,right]
+
 [#norm:addiw_op]#ADDIW is an RV64I instruction that adds the sign-extended 12-bit
 immediate to register _rs1_ and produces the proper sign extension of a
 32-bit result in _rd_.# [#norm:addiw_overflow]#Overflows are ignored and the result is the low

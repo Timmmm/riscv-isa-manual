@@ -1210,6 +1210,15 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESDF(_,_,_)",type=mapping,right]
+
+where `VAESDF.OP = ZVK_VAESDF_VV` and
+[source,sail]
+----
+include::sail:encdec_vaesdf[type=mapping,left-clause="ZVK_VAESDF_VV"]
+----
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -1223,6 +1232,16 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001`'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESDF(_,_,_)",type=mapping,right]
+
+where `VAESDF.OP = ZVK_VAESDF_VS` and
+[source,sail]
+----
+include::sail:encdec_vaesdf[type=mapping,left-clause="ZVK_VAESDF_VS"]
+----
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
@@ -1289,6 +1308,15 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESDM(_,_,_)",type=mapping,right]
+
+where `VAESDM.OP = ZVK_VAESDM_VV` and
+[source,sail]
+----
+include::sail:encdec_vaesdm[type=mapping,left-clause="ZVK_VAESDM_VV"]
+----
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -1302,6 +1330,16 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESDM(_,_,_)",type=mapping,right]
+
+where `VAESDM.OP = ZVK_VAESDM_VS` and
+[source,sail]
+----
+include::sail:encdec_vaesdm[type=mapping,left-clause="ZVK_VAESDM_VS"]
+----
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
@@ -1372,6 +1410,15 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESEF(_,_,_)",type=mapping,right]
+
+where `VAESEF.OP = ZVK_VAESEF_VV` and
+[source,sail]
+----
+include::sail:encdec_vaesef[type=mapping,left-clause="ZVK_VAESEF_VV"]
+----
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -1385,6 +1432,16 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESEF(_,_,_)",type=mapping,right]
+
+where `VAESEF.OP = ZVK_VAESEF_VS` and
+[source,sail]
+----
+include::sail:encdec_vaesef[type=mapping,left-clause="ZVK_VAESEF_VS"]
+----
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
@@ -1455,6 +1512,15 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESEM(_,_,_)",type=mapping,right]
+
+where `VAESEM.OP = ZVK_VAESEM_VV` and
+[source,sail]
+----
+include::sail:encdec_vaesem[type=mapping,left-clause="ZVK_VAESEM_VV"]
+----
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -1468,6 +1534,16 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESEM(_,_,_)",type=mapping,right]
+
+where `VAESEM.OP = ZVK_VAESEM_VS` and
+[source,sail]
+----
+include::sail:encdec_vaesem[type=mapping,left-clause="ZVK_VAESEM_VS"]
+----
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
@@ -1536,6 +1612,10 @@ Encoding::
 {bits: 6, name: '100010'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESKF1_VI(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 
@@ -1624,6 +1704,10 @@ Encoding::
 {bits: 6, name: '101010'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESKF2_VI(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 
@@ -1708,6 +1792,10 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VAESZ_VS(_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * The `vd` register group overlaps the `vs2` register
@@ -1789,6 +1877,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VANDN_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -1802,6 +1893,9 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '000001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VANDN_VX(_,_,_,_)",type=mapping,right]
 
 Vector-Vector Arguments::
 
@@ -1892,6 +1986,9 @@ Encoding (Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VBREV_V(_,_,_)",type=mapping,right]
+
 Arguments::
 
 [%autowidth]
@@ -1939,6 +2036,9 @@ Encoding (Vector)::
 {bits: 6, name: '010010'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VBREV8_V(_,_,_)",type=mapping,right]
 
 Arguments::
 
@@ -1999,6 +2099,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCLMUL_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -2012,6 +2115,10 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '001100'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCLMUL_VX(_,_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 64
 
@@ -2086,6 +2193,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCLMULH_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -2099,6 +2209,10 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '001101'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCLMULH_VX(_,_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 64
 
@@ -2164,6 +2278,9 @@ Encoding (Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCLZ_V(_,_,_)",type=mapping,right]
+
 Arguments::
 
 [%autowidth]
@@ -2212,6 +2329,9 @@ Encoding (Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCPOP_V(_,_,_)",type=mapping,right]
+
 Arguments::
 
 [%autowidth]
@@ -2257,6 +2377,9 @@ Encoding (Vector)::
 {bits: 6, name: '010010'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VCTZ_V(_,_,_)",type=mapping,right]
 
 Arguments::
 
@@ -2307,6 +2430,10 @@ Encoding::
 {bits: 6, name: '101100'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VGHSH_VV(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 
@@ -2399,6 +2526,10 @@ Encoding::
 {bits: 6, name: '101000'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VGMUL_VV(_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 
@@ -2495,6 +2626,9 @@ Encoding (Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VREV8_V(_,_,_)",type=mapping,right]
+
 Arguments::
 
 [%autowidth]
@@ -2553,6 +2687,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VROL_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -2566,6 +2703,9 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '010101'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VROL_VX(_,_,_,_)",type=mapping,right]
 
 Vector-Vector Arguments::
 
@@ -2651,6 +2791,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VROR_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -2664,6 +2807,9 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '010100'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VROR_VX(_,_,_,_)",type=mapping,right]
 
 Encoding (Vector-Immediate)::
 [wavedrom, , svg]
@@ -2679,6 +2825,9 @@ Encoding (Vector-Immediate)::
 {bits: 5, name: '01010'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VROR_VI(_,_,_,_)",type=mapping,right]
 
 Vector-Vector Arguments::
 
@@ -2759,6 +2908,15 @@ Encoding (Vector-Vector) High part::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZVKSHA2TYPE(_,_,_,_)",type=mapping,right]
+
+where `VSHA2C.OP = ZVK_VSHA2CH_VV` and
+[source,sail]
+----
+include::sail:encdec_vsha2[type=mapping,left-clause="ZVK_VSHA2CH_VV"]
+----
+
 Encoding (Vector-Vector) Low part::
 [wavedrom, , svg]
 ....
@@ -2772,6 +2930,16 @@ Encoding (Vector-Vector) Low part::
 {bits: 6, name: '101111'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZVKSHA2TYPE(_,_,_,_)",type=mapping,right]
+
+where `VSHA2C.OP = ZVK_VSHA2CL_VV` and
+[source,sail]
+----
+include::sail:encdec_vsha2[type=mapping,left-clause="ZVK_VSHA2CL_VV"]
+----
+
 Reserved Encodings::
 * `zvknha`: `SEW` is any value other than 32
 * `zvknhb`: `SEW` is any value other than 32 or 64
@@ -2915,6 +3083,10 @@ Encoding (Vector-Vector)::
 {bits: 6, name: '101101'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VSHA2MS_VV(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `zvknha`: `SEW` is any value other than 32
 * `zvknhb`: `SEW` is any value other than 32 or 64
@@ -3061,6 +3233,10 @@ Encoding::
 {bits: 6, name: '101011'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VSM3C_VI(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * The `vd` register group overlaps with the `vs2` register group
@@ -3180,6 +3356,10 @@ Encoding::
 {bits: 6, name: '100000'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VSM3ME_VV(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * The `vd` register group overlaps with the `vs2` register group.
@@ -3272,6 +3452,10 @@ Encoding::
 {bits: 6, name: '100001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VSM4K_VI(_,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 
@@ -3436,6 +3620,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZVKSM4RTYPE(ZVK_VSM4R_VV,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -3449,6 +3636,10 @@ Encoding (Vector-Scalar)::
 {bits: 6, name: '101001'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZVKSM4RTYPE(ZVK_VSM4R_VS,_,_)",type=mapping,right]
+
 Reserved Encodings::
 * `SEW` is any value other than 32
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` register
@@ -3538,6 +3729,9 @@ Encoding (Vector-Vector)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VWSLL_VV(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
@@ -3552,6 +3746,9 @@ Encoding (Vector-Scalar)::
 ]}
 ....
 
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VWSLL_VX(_,_,_,_)",type=mapping,right]
+
 Encoding (Vector-Immediate)::
 [wavedrom, , svg]
 ....
@@ -3565,6 +3762,9 @@ Encoding (Vector-Immediate)::
 {bits: 6, name: '110101'},
 ]}
 ....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="VWSLL_VI(_,_,_,_)",type=mapping,right]
 
 Vector-Vector Arguments::
 
