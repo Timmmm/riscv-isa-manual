@@ -19,8 +19,14 @@ This adds a subtle decoration to make it easier to find tagged text.
     cursor: pointer;
 }
 
+/* Highlight tags when hovered. */
 .tag-highlight-enabled [id^="norm:"]:hover {
     text-shadow: 0px 0px 10px green;
+}
+
+/* Highlight tags when directly linked to, irrepsective of the highlight toggle. */
+[id^="norm:"]:target {
+    text-shadow: 0px 0px 10px yellow;
 }
 
 /* Tag tooltip on hover. */
