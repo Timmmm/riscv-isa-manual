@@ -2480,7 +2480,7 @@ Operation::
 ----
 //This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
-# target_address is temporary internal state, it doesn't represent a real register
+# table_address is temporary internal state, it doesn't represent a real register
 # InstMemory is byte indexed
 
 switch(XLEN) {
@@ -2489,9 +2489,7 @@ switch(XLEN) {
 }
 
 //fetch from the jump table
-target_address[XLEN-1:0] = InstMemory[table_address][XLEN-1:0];
-
-j target_address[XLEN-1:0]&~0x1;
+pc = InstMemory[table_address][XLEN-1:0]&~0x1;  // Clear bit 0.
 
 ----
 
@@ -2559,7 +2557,7 @@ Operation::
 ----
 //This is not SAIL, it's pseudocode. The SAIL hasn't been written yet.
 
-# target_address is temporary internal state, it doesn't represent a real register
+# table_address is temporary internal state, it doesn't represent a real register
 # InstMemory is byte indexed
 
 switch(XLEN) {
@@ -2568,8 +2566,8 @@ switch(XLEN) {
 }
 
 //fetch from the jump table
-target_address[XLEN-1:0] = InstMemory[table_address][XLEN-1:0];
 
-jal ra, target_address[XLEN-1:0]&~0x1;
+ra = pc+2;
+pc = InstMemory[table_address][XLEN-1:0]&~0x1;  // Clear bit 0.
 
 ----
