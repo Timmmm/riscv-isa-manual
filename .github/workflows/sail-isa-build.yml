@@ -25,12 +25,11 @@ jobs:
         run: |
           make build-html
 
-      # Create directory structure pages sites for privileged and unprivileged specs.
+      # Create directory structure pages sites for spec.
       - name: Make GitHub pages directory
         run: |
           cp -r pages dist
-          cp build/riscv-unprivileged.html dist/riscv-unprivileged.html
-          cp build/riscv-privileged.html dist/riscv-privileged.html
+          cp build/riscv-spec.html dist/riscv-spec.html
           cp --recursive build/html_docs dist/html_docs
 
       - name: Upload pages artifact
