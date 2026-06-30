@@ -36,9 +36,7 @@
 * xref:vector-crypto.adoc[Chapter 32.Cryptography Extensions: Vector Instructions, Version 1.0]
 * xref:unpriv-cfi.adoc[Chapter 33. Control-flow Integrity (CFI)]
 * xref:rv-32-64g.adoc[Chapter 34. RV32/64G Instruction Set Listings]
-* xref:extending.adoc[Chapter 35. Appendix: Extending the RISC-V ISA]
 * xref:naming.adoc[Chapter 36. ISA Extension Naming Conventions]
-* xref:history.adoc[Chapter 37. Document Revision History]
 * xref:mm-eplan.adoc[Appendix A: RVWMO Explanatory Material, Version 0.1]
 * xref:mm-formal.adoc[Appendix B: Formal Memory Model Specifications, Version 0.1]
 //Appendices for Vector
@@ -46,5 +44,5 @@
 * xref:calling-convention.adoc[Appendix C: Calling Convention for Vector State (Not authoritative - Placeholder Only)]
 //End of Vector appendices
 //* xref:index.adoc[]
-// this is generated generated from index markers.
+// this is generated from index markers.
 //* xref:bibliography.adoc[Bibliography]

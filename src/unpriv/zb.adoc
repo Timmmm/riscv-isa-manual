@@ -1,0 +1,2733 @@
+[[bits]]
+== Bit Manipulation Extensions
+
+NOTE: This chapter is currently being restructured.
+Its contents are normative, but the presentation might appear disjoint.
+
+The bit-manipulation (bitmanip) extension collection is comprised of several component extensions to the base RISC-V architecture that are intended to provide some combination of code-size reduction, performance improvement, and energy reduction.
+While the instructions are intended for general use, some instructions are more useful in certain domains than in others.
+Hence, several smaller bitmanip extensions are provided. Each of these smaller ext:zb*[] extensions is grouped by common function and use case.
+The extlink:b[] extension, intended for application processors, combines the ext:zb*[] extensions most useful in general code.
+
+[#norm:bitmanip_rv32_rv64]#The bitmanip extensions are defined for RV32 and RV64.#
+
+[#norm:bitmanip_w_suffix_semantics]#The bitmanip extension follows the convention in RV64 that insn:*w[]-suffixed instructions (without a dot before the insn:w[]) ignore the upper 32 bits of their inputs, operate on the least-significant 32 bits as signed values, and produce a 32-bit signed result that is sign-extended to XLEN.#
+
+[#norm:bitmanip_uw_suffix_semantics]#Bitmanip instructions with the suffix insn:.uw[] have one operand that is an unsigned 32-bit value that is extracted from the least-significant 32 bits of the specified register.  Other than that, these perform full-XLEN operations.#
+
+[#norm:bitmanip_bhw_suffix_semantics]#Bitmanip instructions with the suffixes insn:.b[], insn:.h[], and insn:.w[] only look at the least-significant 8 bits, 16 bits, and 32 bits of the input (respectively) and produce an XLEN-wide result that is sign-extended or zero-extended, based on the specific instruction.#
+
+The bit-manipulation instructions comprise the following extensions:
+
+* extlink:zba[]: address generation
+* extlink:zbb[]: basic bit manipulation
+* extlink:zbs[]: single-bit manipulation
+* extlink:b[]: bit manipulation for application processors
+* extlink:zbc[]: carry-less multiplication
+* extlink:zbkb[]: bit manipulation for cryptography
+* extlink:zbkc[]: carry-less multiplication for cryptography
+* extlink:zbkx[]: crossbar permutations
+
+include::zba.adoc[]
+include::zbb.adoc[]
+include::zbs.adoc[]
+include::b-st-ext.adoc[]
+include::zbc.adoc[]
+include::zbkb.adoc[]
+include::zbkc.adoc[]
+include::zbkx.adoc[]
+
+[#insns-b,reftext="Instructions (in alphabetical order)"]
+=== Instructions (in alphabetical order)
+
+The semantics of each instruction is expressed in a SAIL-like syntax.
+
+[#insns-add_uw,reftext=Add unsigned word]
+==== insn:add.uw[]
+
+Synopsis::
+Add unsigned word
+
+Mnemonic::
+insn:add.uw[rd,rs1,rs2]
+
+
+Pseudoinstructions::
+insn:zext.w[rd,rs1] {rightarrow} insn:add.uw[rd,rs1,zero]
+
+[[norm:add_uw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x0, attr: ['ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x04, attr: ['ADD.UW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBA_RTYPEUW(_,_,_,_)",type=mapping,right]
+
+Description::
+This instruction performs an XLEN-wide addition between _rs2_ and the zero-extended least-significant word of _rs1_.
+
+[[norm:add_uw_op]]
+Operation::
+[source,sail]
+--
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + index;
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|extlink:zba[]
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-andn,reftext="AND with inverted operand"]
+==== insn:andn[]
+
+Synopsis::
+AND with inverted operand
+
+Mnemonic::
+insn:andn[rd,rs1,rs2]
+
+[[norm:andn_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x7, attr: ['ANDN']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x20, attr: ['ANDN'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ANDN)",type=mapping,right]
+
+Description::
+This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise inversion of _rs2_.
+
+[[norm:andn_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ANDN]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bclr,reftext="Single-Bit Clear (Register)"]
+==== insn:bclr[]
+
+Synopsis::
+Single-Bit Clear (Register)
+
+Mnemonic::
+insn:bclr[rd,rs1,rs2]
+
+[[norm:bclr_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BCLR'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x24, attr: ['BCLR/BEXT'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BCLR)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit cleared at the index specified in _rs2_.
+The index is read from the lower log2(XLEN) bits of _rs2_.
+
+[[norm:bclr_op]]
+Operation::
++
+sail::execute[clause="ZBS_RTYPE(_, _, _, _)",unindent,part=split,split=BCLR]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bclri,reftext="Single-Bit Clear (Immediate)"]
+==== insn:bclri[]
+
+Synopsis::
+Single-Bit Clear (Immediate)
+
+Mnemonic::
+insn:bclri[rd,rs1,shamt]
+
+[[norm:bclri_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BCLRI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x24, attr: ['BCLRI'] },
+]}
+....
+
+[[norm:bclri_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BCLRI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x12, attr: ['BCLRI'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BCLRI)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit cleared at the index specified in _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
+[#norm:bclri_shamt_rsv_rv32]#For RV32, the encodings corresponding to _shamt[5]_=1 are reserved.#
+
+[[norm:bclri_op]]
+Operation::
++
+sail::execute[clause="ZBS_IOP(_, _, _, _)",unindent,part=split,split=BCLRI]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bext,reftext="Single-Bit Extract (Register)"]
+==== insn:bext[]
+
+Synopsis::
+Single-Bit Extract (Register)
+// Should we describe this as a Set-if-bit-is-set?
+
+Mnemonic::
+insn:bext[rd,rs1,rs2]
+
+[[norm:bext_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['BEXT'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x24, attr: ['BCLR/BEXT'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BEXT)",type=mapping,right]
+
+Description::
+This instruction returns a single bit extracted from _rs1_ at the index specified in _rs2_.
+The index is read from the lower log2(XLEN) bits of _rs2_.
+
+[[norm:bext_op]]
+Operation::
++
+sail::execute[clause="ZBS_RTYPE(_, _, _, _)",unindent,part=split,split=BEXT]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bexti,reftext="Single-Bit Extract (Immediate)"]
+==== insn:bexti[]
+
+Synopsis::
+Single-Bit Extract (Immediate)
+
+Mnemonic::
+insn:bexti[rd,rs1,shamt]
+
+[[norm:bexti_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['BEXTI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x24, attr: ['BEXTI/BCLRI'] },
+]}
+....
+
+[[norm:bexti_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['BEXTI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x12, attr: ['BEXTI/BCLRI'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BEXTI)",type=mapping,right]
+
+Description::
+This instruction returns a single bit extracted from _rs1_ at the index specified in _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
+[#norm:bexti_shamt_rsv_rv32]#For RV32, the encodings corresponding to _shamt[5]_=1 are reserved.#
+
+[[norm:bexti_op]]
+Operation::
++
+sail::execute[clause="ZBS_IOP(_, _, _, _)",unindent,part=split,split=BEXTI]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-binv,reftext="Single-Bit Invert (Register)"]
+==== insn:binv[]
+
+Synopsis::
+Single-Bit Invert (Register)
+
+Mnemonic::
+insn:binv[rd,rs1,rs2]
+
+[[norm:binv_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BINV'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x34, attr: ['BINV'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BINV)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit inverted at the index specified in _rs2_.
+The index is read from the lower log2(XLEN) bits of _rs2_.
+
+[[norm:binv_op]]
+Operation::
++
+sail::execute[clause="ZBS_RTYPE(_, _, _, _)",unindent,part=split,split=BINV]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-binvi,reftext="Single-Bit Invert (Immediate)"]
+==== insn:binvi[]
+
+Synopsis::
+Single-Bit Invert (Immediate)
+
+Mnemonic::
+insn:binvi[rd,rs1,shamt]
+
+[[norm:binvi_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BINV'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x34, attr: ['BINVI'] },
+]}
+....
+
+[[norm:binvi_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BINV'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x1a, attr: ['BINVI'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BINVI)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit inverted at the index specified in _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
+[#norm:binvi_shamt_rsv_rv32]#For RV32, the encodings corresponding to _shamt[5]_=1 are reserved.#
+
+[[norm:binvi_op]]
+Operation::
++
+sail::execute[clause="ZBS_IOP(_, _, _, _)",unindent,part=split,split=BINVI]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bset,reftext="Single-Bit Set (Register)"]
+==== insn:bset[]
+
+Synopsis::
+Single-Bit Set (Register)
+
+Mnemonic::
+insn:bset[rd,rs1,rs2]
+
+[[norm:bset_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BSET'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x14, attr: ['BSET'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_RTYPE(_,_,_,BSET)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit set at the index specified in _rs2_.
+The index is read from the lower log2(XLEN) bits of _rs2_.
+
+[[norm:bset_op]]
+Operation::
++
+sail::execute[clause="ZBS_RTYPE(_, _, _, _)",unindent,part=split,split=BSET]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-bseti,reftext="Single-Bit Set (Immediate)"]
+==== insn:bseti[]
+
+Synopsis::
+Single-Bit Set (Immediate)
+
+Mnemonic::
+insn:bseti[rd,rs1,shamt]
+
+[[norm:bseti_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BSETI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x14, attr: ['BSETI'] },
+]}
+....
+
+[[norm:bseti_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['BSETI'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x0a, attr: ['BSETI'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBS_IOP(_,_,_,BSETI)",type=mapping,right]
+
+Description::
+This instruction returns _rs1_ with a single bit set at the index specified in _shamt_.
+The index is read from the lower log2(XLEN) bits of _shamt_.
+[#norm:bseti_shamt_rsv_rv32]#For RV32, the encodings corresponding to _shamt[5]_=1 are reserved.#
+
+[[norm:bseti_op]]
+Operation::
++
+sail::execute[clause="ZBS_IOP(_, _, _, _)",unindent,part=split,split=BSETI]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbs (extlink:zbs[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-clmul,reftext="Carry-less multiply (low-part)"]
+==== insn:clmul[]
+
+Synopsis::
+Carry-less multiply (low-part)
+
+Mnemonic::
+insn:clmul[rd,rs1,rs2]
+
+[[norm:clmul_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CLMUL'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x5, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMUL(_,_,_)",type=mapping,right]
+
+Description::
+insn:clmul[] produces the lower half of the 2·XLEN carry-less product.
+
+[[norm:clmul_op]]
+Operation::
++
+sail::execute[clause="CLMUL(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbc (extlink:zbc[])
+|v1.0
+|Ratified
+
+|Zbkc (extlink:zbkc[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-clmulh,reftext="Carry-less multiply (high-part)"]
+==== insn:clmulh[]
+
+Synopsis::
+Carry-less multiply (high-part)
+
+Mnemonic::
+insn:clmulh[rd,rs1,rs2]
+
+[[norm:clmulh_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x3, attr: ['CLMULH'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x5, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMULH(_,_,_)",type=mapping,right]
+
+Description::
+insn:clmulh[] produces the upper half of the 2·XLEN carry-less product.
+
+[[norm:clmulh_op]]
+Operation::
++
+sail::execute[clause="CLMULH(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbc (extlink:zbc[])
+|v1.0
+|Ratified
+
+|Zbkc (extlink:zbkc[])
+|v1.0
+|Ratified
+|===
+
+
+<<<
+[#insns-clmulr,reftext="Carry-less multiply (reversed)"]
+==== insn:clmulr[]
+
+Synopsis::
+Carry-less multiply (reversed)
+
+Mnemonic::
+insn:clmulr[rd,rs1,rs2]
+
+[[norm:clmulr_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['CLMULR'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x5, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLMULR(_,_,_)",type=mapping,right]
+
+Description::
+insn:clmulr[] produces bits 2·XLEN−2:XLEN-1 of the 2·XLEN carry-less
+product.
+
+[[norm:clmulr_op]]
+Operation::
++
+sail::execute[clause="CLMULR(_, _, _)",part=body,unindent]
+
+.Note
+[NOTE, caption="A" ]
+===============================================================
+The insn:clmulr[] instruction is used to accelerate CRC calculations.
+The insn:r[] in the instruction's mnemonic stands for _reversed_, as the
+instruction is equivalent to bit-reversing the inputs, performing
+a insn:clmul[], then bit-reversing the output.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbc (extlink:zbc[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-clz,reftext="Count leading zero bits"]
+==== insn:clz[]
+
+Synopsis::
+Count leading zero bits
+
+Mnemonic::
+insn:clz[rd,rs]
+
+[[norm:clz_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CLZ']  },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x0, attr: ['CLZ'] },
+    { bits:  7, name: 0x30, attr: ['CLZ']  },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLZ(_,_)",type=mapping,right]
+
+Description::
+This instruction counts the number of 0's before the first 1, starting at the most-significant bit (i.e., XLEN-1) and progressing to bit 0. Accordingly, if the input is 0, the output is XLEN, and if the most-significant bit of the input is a 1, the output is 0.
+
+[[norm:clz_op]]
+Operation::
++
+sail::execute[clause="CLZ(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-clzw,reftext="Count leading zero bits in word"]
+==== insn:clzw[]
+
+Synopsis::
+Count leading zero bits in word
+
+Mnemonic::
+insn:clzw[rd,rs]
+
+[[norm:clzw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CLZW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x0, attr: ['CLZW'] },
+    { bits:  7, name: 0x30, attr: ['CLZW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CLZW(_,_)",type=mapping,right]
+
+Description::
+This instruction counts the number of 0's before the first 1 starting at bit 31 and progressing to bit 0.
+Accordingly, if the least-significant word is 0, the output is 32, and if the most-significant bit of the word (i.e., bit 31) is a 1, the output is 0.
+
+[[norm:clzw_op]]
+Operation::
++
+sail::execute[clause="CLZW(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-cpop,reftext="Count set bits"]
+==== insn:cpop[]
+
+Synopsis::
+Count set bits
+
+Mnemonic::
+insn:cpop[rd,rs]
+
+[[norm:cpop_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CPOP'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x2, attr: ['CPOP'] },
+    { bits:  7, name: 0x30, attr: ['CPOP'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CPOP(_,_)",type=mapping,right]
+
+Description::
+This instructions counts the number of 1's (i.e., set bits) in the source register.
+
+[[norm:cpop_op]]
+Operation::
++
+sail::execute[clause="CPOP(_, _)",part=body,unindent]
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
+This operation is known as population count, popcount, sideways sum, bit summation, or Hamming weight.
+
+The GCC builtin function `+__builtin_popcount (unsigned int x)+` is implemented by insn:cpop[] on RV32 and by insn:cpopw[] on RV64.
+The GCC builtin function `+__builtin_popcountl (unsigned long x)+` for LP64 is implemented by insn:cpop[] on RV64.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-cpopw,reftext="Count set bits in word"]
+==== insn:cpopw[]
+
+Synopsis::
+Count set bits in word
+
+Mnemonic::
+insn:cpopw[rd,rs]
+
+[[norm:cpopw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CPOPW'] },
+    { bits:  5, name: 'rs' },
+    { bits:  5, name: 0x2, attr: ['CPOPW'] },
+    { bits:  7, name: 0x30, attr: ['CPOPW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CPOPW(_,_)",type=mapping,right]
+
+Description::
+This instructions counts the number of 1's (i.e., set bits) in the least-significant word of the source register.
+
+[[norm:cpopw_op]]
+Operation::
++
+sail::execute[clause="CPOPW(_, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-ctz,reftext="Count trailing zero bits"]
+==== insn:ctz[]
+
+Synopsis::
+Count trailing zeros
+
+Mnemonic::
+insn:ctz[rd,rs]
+
+[[norm:ctz_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  7, name: 0x30, attr: ['CTZ/CTZW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CTZ(_,_)",type=mapping,right]
+
+Description::
+This instruction counts the number of 0's before the first 1, starting at the least-significant bit (i.e., 0) and progressing to the most-significant bit (i.e., XLEN-1).
+Accordingly, if the input is 0, the output is XLEN, and if the least-significant bit of the input is a 1, the output is 0.
+
+[[norm:ctz_op]]
+Operation::
++
+sail::execute[clause="CTZ(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-ctzw,reftext="Count trailing zero bits in word"]
+==== insn:ctzw[]
+
+Synopsis::
+Count trailing zero bits in word
+
+Mnemonic::
+insn:ctzw[rd,rs]
+
+[[norm:ctzw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x1, attr: ['CTZ/CTZW'] },
+    { bits:  7, name: 0x30, attr: ['CTZ/CTZW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="CTZW(_,_)",type=mapping,right]
+
+Description::
+This instruction counts the number of 0's before the first 1, starting at the least-significant bit (i.e., 0) and progressing to the most-significant bit of the least-significant word (i.e., 31). Accordingly, if the least-significant word is 0, the output is 32, and if the least-significant bit of the input is a 1, the output is 0.
+
+[[norm:ctzw_op]]
+Operation::
++
+sail::execute[clause="CTZW(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-max,reftext="Maximum"]
+==== insn:max[]
+
+Synopsis::
+Maximum
+
+Mnemonic::
+insn:max[rd,rs1,rs2]
+
+[[norm:max_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x6, attr: ['MAX']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MAX)",type=mapping,right]
+
+Description::
+This instruction returns the larger of two signed integers.
+
+[[norm:max_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=MAX]
+
+.Software Hint
+[NOTE, caption="SW"]
+===============================================================
+Calculating the absolute value of a signed integer can be performed
+using the following sequence: insn:neg[rD,rS] followed by insn:max[rD,rS,rD].
+When using this common sequence, it is suggested that they
+are scheduled with no intervening instructions so that
+implementations that are so optimized can fuse them together.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-maxu,reftext="Unsigned maximum"]
+==== insn:maxu[]
+
+Synopsis::
+Unsigned maximum
+
+Mnemonic::
+insn:maxu[rd,rs1,rs2]
+
+[[norm:maxu_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x7, attr: ['MAXU']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MAXU)",type=mapping,right]
+
+Description::
+This instruction returns the larger of two unsigned integers.
+
+[[norm:maxu_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=MAXU]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-min,reftext="Minimum"]
+==== insn:min[]
+
+Synopsis::
+Minimum
+
+Mnemonic::
+insn:min[rd,rs1,rs2]
+
+[[norm:min_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['MIN']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MIN)",type=mapping,right]
+
+Description::
+This instruction returns the smaller of two signed integers.
+
+[[norm:min_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=MIN]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-minu,reftext="Unsigned minimum"]
+==== insn:minu[]
+
+Synopsis::
+Unsigned minimum
+
+Mnemonic::
+insn:minu[rd,rs1,rs2]
+
+[[norm:minu_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['MINU']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x05, attr: ['MINMAX/CLMUL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,MINU)",type=mapping,right]
+
+Description::
+This instruction returns the smaller of two unsigned integers.
+
+[[norm:minu_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=MINU]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-orc_b,reftext="Bitwise OR-Combine, byte granule"]
+==== insn:orc.b[]
+
+Synopsis::
+Bitwise OR-Combine, byte granule
+
+Mnemonic::
+insn:orc.b[rd,rs]
+
+[[norm:orc_b_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5 },
+    { bits:  5, name: 'rs' },
+    { bits: 12, name: 0x287 }
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ORCB(_,_)",type=mapping,right]
+
+Description::
+Combines the bits within each byte using bitwise logical OR.
+This sets the bits of each byte in the result _rd_ to all zeros if no bit within the respective byte of _rs_ is set, or to all ones if any bit within the respective byte of _rs_ is set.
+
+[[norm:orc_b_op]]
+Operation::
++
+sail::execute[clause="ORCB(_, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-orn,reftext="OR with inverted operand"]
+==== insn:orn[]
+
+Synopsis::
+OR with inverted operand
+
+Mnemonic::
+insn:orn[rd,rs1,rs2]
+
+[[norm:orn_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x6, attr: ['ORN']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x20, attr: ['ORN'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ORN)",type=mapping,right]
+
+Description::
+This instruction performs the bitwise logical OR operation between _rs1_ and the bitwise inversion of _rs2_.
+
+[[norm:orn_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ORN]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-pack,reftext="Pack low halves of registers"]
+==== insn:pack[]
+
+Synopsis::
+Pack the low halves of _rs1_ and _rs2_ into _rd_.
+
+Mnemonic::
+insn:pack[rd,rs1,rs2]
+
+[[norm:pack_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    {bits:  7, name: 0x33, attr: ['OP'] },
+    {bits: 5, name: 'rd'},
+    {bits: 3, name: 0x4, attr:['PACK']},
+    {bits: 5, name: 'rs1'},
+    {bits: 5, name: 'rs2'},
+    {bits: 7, name: 0x4, attr:['PACK']},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACK)",type=mapping,right]
+
+Description::
+The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
+_rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
+
+[[norm:pack_op]]
+Operation::
++
+sail::execute[clause="ZBKB_RTYPE(_, _, _, _)",unindent,part=split,split=PACK]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+NOTE: For RV32, the insn:pack[] instruction with _rs2_=`x0` is the insn:zext.h[]
+instruction.
+Hence, for RV32, any extension that contains the insn:pack[] instruction also
+contains the insn:zext.h[] instruction.
+
+<<<
+[#insns-packh,reftext="Pack low bytes of registers"]
+==== insn:packh[]
+
+Synopsis::
+Pack the low bytes of _rs1_ and _rs2_ into _rd_.
+
+Mnemonic::
+insn:packh[rd,rs1,rs2]
+
+[[norm:packh_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    {bits:  7, name: 0x33, attr: ['OP'] },
+    {bits: 5, name: 'rd'},
+    {bits: 3, name: 0x7, attr: ['PACKH']},
+    {bits: 5, name: 'rs1'},
+    {bits: 5, name: 'rs2'},
+    {bits: 7, name: 0x4, attr: ['PACKH']},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_RTYPE(_,_,_,PACKH)",type=mapping,right]
+
+Description::
+The packh instruction packs the least-significant bytes of
+_rs1_ and _rs2_ into the 16 least-significant bits of _rd_,
+zero extending the rest of _rd_.
+
+[[norm:packh_op]]
+Operation::
++
+sail::execute[clause="ZBKB_RTYPE(_, _, _, _)",unindent,part=split,split=PACKH]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-packw,reftext="Pack low 16-bits of registers (RV64)"]
+==== insn:packw[]
+
+Synopsis::
+Pack the low 16-bits of _rs1_ and _rs2_ into _rd_ on RV64.
+
+Mnemonic::
+insn:packw[rd,rs1,rs2]
+
+[[norm:packw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x3b, attr: ['OP-32']},
+{bits: 5, name: 'rd'},
+{bits: 3, name: 0x4},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 'rs2'},
+{bits: 7, name: 0x4},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBKB_PACKW(_,_,_)",type=mapping,right]
+
+Description::
+This instruction packs the low 16 bits of
+_rs1_ and _rs2_ into the 32 least-significant bits of _rd_,
+sign extending the 32-bit result to the rest of _rd_.
+This instruction only exists on RV64 based systems.
+
+[[norm:packw_op]]
+Operation::
++
+sail::execute[clause="ZBKB_PACKW(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+NOTE: For RV64, the insn:packw[] instruction with _rs2_=`x0` is the insn:zext.h[]
+instruction.
+Hence, for RV64, any extension that contains the insn:packw[] instruction also
+contains the insn:zext.h[] instruction.
+
+<<<
+[#insns-rev8,reftext="Byte-reverse register"]
+==== insn:rev8[]
+
+Synopsis::
+Byte-reverse register
+
+Mnemonic::
+insn:rev8[rd,rs]
+
+[[norm:rev8_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5 },
+    { bits:  5, name: 'rs' },
+    { bits: 12, name: 0x698 }
+]}
+....
+
+[[norm:rev8_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5 },
+    { bits:  5, name: 'rs' },
+    { bits: 12, name: 0x6b8 }
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="REV8(_,_)",type=mapping,right]
+
+Description::
+This instruction reverses the order of the bytes in _rs_.
+
+[[norm:rev8_op]]
+Operation::
++
+sail::execute[clause="REV8(_, _)",part=body,unindent]
+
+.Note
+[NOTE, caption="A" ]
+===============================================================
+The insn:rev8[] mnemonic corresponds to different instruction encodings in RV32 and RV64.
+===============================================================
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
+The byte-reverse operation is only available for the full register
+width.  To emulate word-sized and halfword-sized byte-reversal,
+perform a insn:rev8[rd,rs] followed by a insn:srai[rd,rd,K], where K is
+XLEN-32 and XLEN-16, respectively.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|v1.0
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-brev8,reftext="Reverse bits in bytes"]
+==== insn:brev8[]
+
+Synopsis::
+Reverse the bits in each byte of a source register.
+
+Mnemonic::
+insn:brev8[rd,rs]
+
+[[norm:brev8_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5 },
+    { bits:  5, name: 'rs' },
+    { bits: 12, name: 0x687 }
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="BREV8(_,_)",type=mapping,right]
+
+Description::
+This instruction reverses the order of the bits in every byte of a register.
+
+[[norm:brev8_op]]
+Operation::
++
+sail::execute[clause="BREV8(_, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-rol,reftext="Rotate left (Register)"]
+==== insn:rol[]
+
+Synopsis::
+Rotate Left (Register)
+
+Mnemonic::
+insn:rol[rd,rs1,rs2]
+
+[[norm:rol_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['ROL']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x30, attr: ['ROL'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ROL)",type=mapping,right]
+
+Description::
+This instruction performs a rotate left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
+
+[[norm:rol_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ROL]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-rolw,reftext="Rotate Left Word (Register)"]
+==== insn:rolw[]
+
+Synopsis::
+Rotate Left Word (Register)
+
+Mnemonic::
+insn:rolw[rd,rs1,rs2]
+
+[[norm:rolw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['ROLW']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x30, attr: ['ROLW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPEW(_,_,_,ROLW)",type=mapping,right]
+
+Description::
+This instruction performs a rotate left on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
+The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits.
+
+[[norm:rolw_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPEW(_, _, _, _)",unindent,part=split,split=ROLW]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-ror,reftext="Rotate right (Register)"]
+==== insn:ror[]
+
+Synopsis::
+Rotate Right
+
+Mnemonic::
+insn:ror[rd,rs1,rs2]
+
+[[norm:ror_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['ROR']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x30, attr: ['ROR'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,ROR)",type=mapping,right]
+
+Description::
+This instruction performs a rotate right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
+
+[[norm:ror_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=ROR]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-rori,reftext="Rotate right (Immediate)"]
+==== insn:rori[]
+
+Synopsis::
+Rotate Right (Immediate)
+
+Mnemonic::
+insn:rori[rd,rs1,shamt]
+
+[[norm:rori_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORI']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x30, attr: ['RORI'] },
+]}
+....
+
+[[norm:rori_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORI']},
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x18, attr: ['RORI'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="RORI(_,_,_)",type=mapping,right]
+
+Description::
+This instruction performs a rotate right of _rs1_ by the amount in the least-significant log2(XLEN) bits of _shamt_.
+For RV32, the encodings corresponding to _shamt[5]_=1 are reserved.
+
+[[norm:rori_op]]
+Operation::
++
+sail::execute[clause="RORI(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-roriw,reftext="Rotate right Word (Immediate)"]
+==== insn:roriw[]
+
+Synopsis::
+Rotate Right Word by Immediate
+
+Mnemonic::
+insn:roriw[rd,rs1,shamt]
+
+[[norm:roriw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORIW']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'shamt' },
+    { bits:  7, name: 0x30, attr: ['RORIW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="RORIW(_,_,_)",type=mapping,right]
+
+Description::
+This instruction performs a rotate right on the least-significant word
+of _rs1_ by the amount in the least-significant log2(XLEN) bits of
+_shamt_.
+The resulting word value is sign-extended by copying bit 31 to all of
+the more-significant bits.
+
+
+[[norm:roriw_op]]
+Operation::
++
+sail::execute[clause="RORIW(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-rorw,reftext="Rotate right Word (Register)"]
+==== insn:rorw[]
+
+Synopsis::
+Rotate Right Word (Register)
+
+Mnemonic::
+insn:rorw[rd,rs1,rs2]
+
+[[norm:rorw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x5, attr: ['RORW']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x30, attr: ['RORW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPEW(_,_,_,RORW)",type=mapping,right]
+
+Description::
+This instruction performs a rotate right on the least-significant word of  _rs1_ by the amount in least-significant 5 bits of _rs2_.
+The resultant word is sign-extended by copying bit 31 to all of the more-significant bits.
+
+[[norm:rorw_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPEW(_, _, _, _)",unindent,part=split,split=RORW]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-sext_b,reftext="Sign-extend byte"]
+==== insn:sext.b[]
+
+Synopsis::
+Sign-extend byte
+
+Mnemonic::
+insn:sext.b[rd,rs]
+
+[[norm:sext_b_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['SEXT.B/SEXT.H'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x04, attr: ['SEXT.B'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,SEXTB)",type=mapping,right]
+
+Description::
+This instruction sign-extends the least-significant byte in the source to XLEN by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-significant bits.
+
+[[norm:sext_b_op]]
+Operation::
++
+sail::execute[clause="ZBB_EXTOP(_, _, _, _)",unindent,part=split,split=SEXTB]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-sext_h,reftext="Sign-extend halfword"]
+==== insn:sext.h[]
+
+Synopsis::
+Sign-extend halfword
+
+Mnemonic::
+insn:sext.h[rd,rs]
+
+[[norm:sext_h_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x13, attr: ['OP-IMM'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['SEXT.B/SEXT.H'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 0x05, attr: ['SEXT.H'] },
+    { bits:  7, name: 0x30 },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,SEXTH)",type=mapping,right]
+
+Description::
+This instruction sign-extends the least-significant halfword in _rs_ to XLEN by copying the most-significant bit in the halfword (i.e., bit 15) to all of the more-significant bits.
+
+[[norm:sext_h_op]]
+Operation::
++
+sail::execute[clause="ZBB_EXTOP(_, _, _, _)",unindent,part=split,split=SEXTH]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+|===
+
+
+<<<
+[#insns-sh1add,reftext=Shift left by 1 and add]
+==== insn:sh1add[]
+
+Synopsis::
+Shift left by 1 and add
+
+Mnemonic::
+insn:sh1add[rd,rs1,rs2]
+
+[[norm:sh1add_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['SH1ADD'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH1ADD'] },
+]}
+....
+
+Description::
+This instruction shifts _rs1_ to the left by 1 bit and adds it to _rs2_.
+
+[[norm:sh1add_op]]
+Operation::
+[source,sail]
+--
+X(rd) = X(rs2) + (X(rs1) << 1);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+// We have decided that this and all other instructions will not have reserved encodings for "useless encodings"
+// We could follow suit of the base ISA and create HINTs if there is some recognized value for doing so
+
+<<<
+[#insns-sh1add_uw,reftext=Shift unsigned word left by 1 and add]
+==== insn:sh1add.uw[]
+
+Synopsis::
+Shift unsigned word left by 1 and add
+
+Mnemonic::
+insn:sh1add.uw[rd,rs1,rs2]
+
+[[norm:sh1add_uw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['SH1ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH1ADD.UW']  },
+]}
+....
+
+Description::
+This instruction performs an XLEN-wide addition of two addends.
+The first addend is _rs2_. The second addend is the unsigned value formed by extracting the least-significant word of _rs1_ and shifting it left by 1 place.
+
+[[norm:sh1add_uw_op]]
+Operation::
+[source,sail]
+--
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + (index << 1);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-sh2add,reftext=Shift left by 2 and add]
+==== insn:sh2add[]
+
+Synopsis::
+Shift left by 2 and add
+
+Mnemonic::
+insn:sh2add[rd,rs1,rs2]
+
+[[norm:sh2add_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['SH2ADD'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH2ADD'] },
+]}
+....
+
+Description::
+This instruction shifts _rs1_ to the left by 2 places and adds it to _rs2_.
+
+[[norm:sh2add_op]]
+Operation::
+[source,sail]
+--
+X(rd) = X(rs2) + (X(rs1) << 2);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-sh2add_uw,reftext=Shift unsigned word left by 2 and add]
+==== insn:sh2add.uw[]
+
+Synopsis::
+Shift unsigned word left by 2 and add
+
+Mnemonic::
+insn:sh2add.uw[rd,rs1,rs2]
+
+[[norm:sh2add_uw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['SH2ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH2ADD.UW'] },
+]}
+....
+
+Description::
+This instruction performs an XLEN-wide addition of two addends.
+The first addend is _rs2_.
+The second addend is the unsigned value formed by extracting the least-significant word of _rs1_ and shifting it left by 2 places.
+
+[[norm:sh2add_uw_op]]
+Operation::
+[source,sail]
+--
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + (index << 2);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-sh3add,reftext=Shift left by 3 and add]
+==== insn:sh3add[]
+
+Synopsis::
+Shift left by 3 and add
+
+Mnemonic::
+insn:sh3add[rd,rs1,rs2]
+
+[[norm:sh3add_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x6, attr: ['SH3ADD'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH3ADD'] },
+]}
+....
+
+Description::
+This instruction shifts _rs1_ to the left by 3 places and adds it to _rs2_.
+
+[[norm:sh3add_op]]
+Operation::
+[source,sail]
+--
+X(rd) = X(rs2) + (X(rs1) << 3);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-sh3add_uw,reftext=Shift unsigned word left by 3 and add]
+==== insn:sh3add.uw[]
+
+Synopsis::
+Shift unsigned word left by 3 and add
+
+Mnemonic::
+insn:sh3add.uw[rd,rs1,rs2]
+
+[[norm:sh3add_uw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x6, attr: ['SH3ADD.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH3ADD.UW'] },
+]}
+....
+
+Description::
+This instruction performs an XLEN-wide addition of two addends. The first addend is _rs2_. The second addend is the unsigned value formed by extracting the least-significant word of _rs1_ and shifting it left by 3 places.
+
+[[norm:sh3add_uw_op]]
+Operation::
+[source,sail]
+--
+let base = X(rs2);
+let index = EXTZ(X(rs1)[31..0]);
+
+X(rd) = base + (index << 3);
+--
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-slli_uw,reftext="Shift-left unsigned word (Immediate)"]
+==== insn:slli.uw[]
+
+Synopsis::
+Shift-left unsigned word (Immediate)
+
+Mnemonic::
+insn:slli.uw[rd,rs1,shamt]
+
+[[norm:slli_uw_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x1b, attr: ['OP-IMM-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x1, attr: ['SLLI.UW'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  6, name: 'shamt' },
+    { bits:  6, name: 0x02, attr: ['SLLI.UW'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="SLLIUW(_,_,_)",type=mapping,right]
+
+Description::
+This instruction takes the least-significant word of _rs1_, zero-extends it, and shifts it left by the immediate.
+
+[[norm:slli_uw_op]]
+Operation::
++
+sail::execute[clause="SLLIUW(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zba (extlink:zba[])
+|0.93
+|Ratified
+|===
+
+.Architecture Explanation
+[NOTE, caption="A" ]
+===============================================================
+This instruction is the same as insn:slli[] with insn:zext.w[] performed on _rs1_ before shifting.
+===============================================================
+
+<<<
+[#insns-unzip,reftext="Bit deinterleave"]
+==== insn:unzip[]
+
+Synopsis::
+Place odd and even bits of the source register into upper and lower halves of
+the destination register, respectively.
+
+Mnemonic::
+insn:unzip[rd,rs]
+
+[[norm:unzip_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x13, attr: ['OP-IMM']},
+{bits: 5, name: 'rd'},
+{bits: 3, name: 0x5},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 0xf},
+{bits: 7, name: 0x4},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="UNZIP(_,_)",type=mapping,right]
+
+Description::
+This instruction scatters all of the odd and even bits of a source word into
+the high and low halves of a destination word.
+It is the inverse of the <<insns-zip-sc,zip>> instruction.
+This instruction is available only on RV32.
+
+[[norm:unzip_op]]
+Operation::
++
+sail::execute[clause="UNZIP(_, _)",part=body,unindent]
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
+This instruction is useful for implementing the SHA3 cryptographic
+hash function on a 32-bit architecture, as it implements the
+bit-interleaving operation used to speed up the 64-bit rotations
+directly.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[]) (RV32)
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-xnor,reftext="Exclusive NOR"]
+==== insn:xnor[]
+
+Synopsis::
+Exclusive NOR
+
+Mnemonic::
+insn:xnor[rd,rs1,rs2]
+
+[[norm:xnor_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['XNOR']},
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x20, attr: ['XNOR'] },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_RTYPE(_,_,_,XNOR)",type=mapping,right]
+
+Description::
+This instruction performs the bit-wise exclusive-NOR operation on _rs1_ and _rs2_.
+
+[[norm:xnor_op]]
+Operation::
++
+sail::execute[clause="ZBB_RTYPE(_, _, _, _)",unindent,part=split,split=XNOR]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+
+|Zbkb (extlink:zbkb[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-xperm8,reftext="Crossbar permutation (bytes)"]
+==== insn:xperm8[]
+
+Synopsis::
+Byte-wise lookup of indices into a vector in registers.
+
+Mnemonic::
+insn:xperm8[rd,rs1,rs2]
+
+[[norm:xperm8_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x33, attr: ['OP'] },
+{bits: 5, name: 'rd'},
+{bits: 3, name: 0x4},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 'rs2'},
+{bits: 7, name: 0x14},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM8(_,_,_)",type=mapping,right]
+
+Description::
+The insn:xperm8[] instruction operates on bytes.
+The _rs1_ register contains a vector of XLEN/8 8-bit elements.
+The _rs2_ register contains a vector of XLEN/8 8-bit indexes.
+The result is each element in _rs2_ replaced by the indexed element in _rs1_,
+or zero if the index into _rs2_ is out of bounds.
+
+[[norm:xperm8_op]]
+Operation::
++
+sail::execute[clause="XPERM8(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkx (extlink:zbkx[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-xperm4,reftext="Crossbar permutation (nibbles)"]
+==== insn:xperm4[]
+
+Synopsis::
+Nibble-wise lookup of indices into a vector.
+
+Mnemonic::
+insn:xperm4[rd,rs1,rs2]
+
+[[norm:xperm4_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x33, attr: ['OP'] },
+{bits: 5, name: 'rd'},
+{bits: 3, name: 0x2},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 'rs2'},
+{bits: 7, name: 0x14},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="XPERM4(_,_,_)",type=mapping,right]
+
+Description::
+The insn:xperm4[] instruction operates on nibbles.
+The _rs1_ register contains a vector of XLEN/4 4-bit elements.
+The _rs2_ register contains a vector of XLEN/4 4-bit indexes.
+The result is each element in _rs2_ replaced by the indexed element in _rs1_,
+or zero if the index into _rs2_ is out of bounds.
+
+[[norm:xperm4_op]]
+Operation::
++
+sail::execute[clause="XPERM4(_, _, _)",part=body,unindent]
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkx (extlink:zbkx[])
+|v1.0
+|Ratified
+|===
+
+<<<
+[#insns-zext_h,reftext="Zero-extend halfword"]
+==== insn:zext.h[]
+
+Synopsis::
+Zero-extend halfword
+
+Mnemonic::
+insn:zext.h[rd,rs]
+
+[[norm:zext_h_rv32_enc]]
+Encoding (RV32)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['ZEXT.H']},
+    { bits:  5, name: 'rs' },
+    { bits:  5, name: 0x00 },
+    { bits:  7, name: 0x04 },
+]}
+....
+
+[[norm:zext_h_rv64_enc]]
+Encoding (RV64)::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x3b, attr: ['OP-32'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x4, attr: ['ZEXT.H']},
+    { bits:  5, name: 'rs' },
+    { bits:  5, name: 0x00 },
+    { bits:  7, name: 0x04 },
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZBB_EXTOP(_,_,ZEXTH)",type=mapping,right]
+
+Description::
+This instruction zero-extends the least-significant halfword of the source to XLEN by inserting 0's into all of the bits more significant than 15.
+
+[[norm:zext_h_op]]
+Operation::
++
+sail::execute[clause="ZBB_EXTOP(_, _, _, _)",unindent,part=split,split=ZEXTH]
+
+.Note
+[NOTE, caption="A" ]
+===============================================================
+The insn:zext.h[] mnemonic corresponds to different instruction encodings in RV32 and RV64.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbb (ext:zbb[])
+|0.93
+|Ratified
+|===
+
+<<<
+[#insns-zip,reftext="Bit interleave"]
+==== insn:zip[]
+
+Synopsis::
+Interleave upper and lower halves of the source register into odd and even
+bits of the destination register, respectively.
+
+Mnemonic::
+insn:zip[rd,rs]
+
+[[norm:zip_enc]]
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x13, attr: ['OP-IMM']},
+{bits: 5, name: 'rd'},
+{bits: 3, name: 0x1},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 0xf},
+{bits: 7, name: 0x4},
+]}
+....
+
+Encoding (Sail)::
+include::sailwavedrom:encdec[left-clause="ZIP(_,_)",type=mapping,right]
+
+Description::
+This instruction gathers bits from the high and low halves of the source
+word into odd/even bit positions in the destination word.
+It is the inverse of the <<insns-unzip-sc,unzip>> instruction.
+This instruction is available only on RV32.
+
+[[norm:zip_op]]
+Operation::
++
+sail::execute[clause="ZIP(_, _)",part=body,unindent]
+
+.Software Hint
+[NOTE, caption="SH" ]
+===============================================================
+This instruction is useful for implementing the SHA3 cryptographic
+hash function on a 32-bit architecture, as it implements the
+bit-interleaving operation used to speed up the 64-bit rotations
+directly.
+===============================================================
+
+Included in::
+[%header,cols="4,2,2"]
+|===
+|Extension
+|Minimum version
+|Lifecycle state
+
+|Zbkb (extlink:zbkb[]) (RV32)
+|v1.0
+|Ratified
+|===
+
+//

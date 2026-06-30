@@ -16,30 +16,37 @@
 # Building with a preinstalled docker container is recommended.
 # Install by running:
 #
-#   docker pull riscvintl/riscv-docs-base-container-image:latest
+#   docker pull ghcr.io/riscv/riscv-docs-base-container-image:latest
 #
 
-DOCS := riscv-privileged riscv-unprivileged
+DOCS := riscv-spec
 
 RELEASE_TYPE ?= draft
+DATE ?= $(shell date +%Y%m%d)
+MONTHYEAR := $(shell date -j -f "%Y%m%d" "$(DATE)" +"%B %Y" 2>/dev/null || date -d "$(DATE)" +"%B %Y")
+YEAR := $(shell date -j -f "%Y%m%d" "$(DATE)" +"%Y" 2>/dev/null || date -d "$(DATE)" +"%Y")
 
+CITATION_DESCRIPTION := $(DATE)-$(RELEASE_TYPE)
 ifeq ($(RELEASE_TYPE), draft)
   WATERMARK_OPT := -a draft-watermark
-  RELEASE_DESCRIPTION := DRAFT---NOT AN OFFICIAL RELEASE
+  RELEASE_DESCRIPTION := DRAFT—NOT AN OFFICIAL RELEASE
 else ifeq ($(RELEASE_TYPE), intermediate)
   WATERMARK_OPT :=
   RELEASE_DESCRIPTION := Intermediate Release
 else ifeq ($(RELEASE_TYPE), official)
   WATERMARK_OPT :=
   RELEASE_DESCRIPTION := Official Release
+  CITATION_DESCRIPTION := $(DATE)
 else
   $(error Unknown build type; use RELEASE_TYPE={draft, intermediate, official})
 endif
 
-DATE ?= $(shell date +%Y%m%d)
+RELEASE_DESCRIPTION_HTML := $(RELEASE_DESCRIPTION).  © RISC-V International, $(YEAR).
+
 DOCKER_BIN ?= docker
+DOCKER_INTERACTIVE=--init $(shell [ -t 0 ] && echo "-t")
 SKIP_DOCKER ?= $(shell if command -v ${DOCKER_BIN}  >/dev/null 2>&1 ; then echo false; else echo true; fi)
-DOCKER_IMG := riscvintl/riscv-docs-base-container-image:latest
+DOCKER_IMG := ghcr.io/riscv/riscv-docs-base-container-image:latest
 ifneq ($(SKIP_DOCKER),true)
     DOCKER_IS_PODMAN = \
         $(shell ! ${DOCKER_BIN}  -v | grep podman >/dev/null ; echo $$?)
@@ -65,6 +72,7 @@ ifneq ($(SKIP_DOCKER),true)
     DOCKER_CMD = \
         ${DOCKER_BIN} run --rm \
             -e HOME=/tmp \
+            ${DOCKER_INTERACTIVE} \
             -v ${PWD}/$@.workdir:/build${DOCKER_VOL_SUFFIX} \
             -v ${PWD}/src:/src:ro${DOCKER_EXTRA_VOL_SUFFIX} \
             -v ${PWD}/normative_rule_defs:/normative_rule_defs:ro${DOCKER_EXTRA_VOL_SUFFIX} \
@@ -119,7 +127,8 @@ DOCS_PDF := $(addprefix $(BUILD_DIR)/, $(addsuffix .pdf, $(DOCS)))
 DOCS_HTML := $(addprefix $(BUILD_DIR)/, $(addsuffix .html, $(DOCS)))
 DOCS_EPUB := $(addprefix $(BUILD_DIR)/, $(addsuffix .epub, $(DOCS)))
 DOCS_NORM_TAGS := $(addprefix $(BUILD_DIR)/, $(addsuffix $(DOC_NORM_TAG_SUFFIX), $(DOCS)))
-NORM_RULES := $(BUILD_DIR)/norm-rules.json
+NORM_RULES_JSON := $(BUILD_DIR)/norm-rules.json
+NORM_RULES_HTML := $(BUILD_DIR)/norm-rules.html
 
 ENV := LANG=C.utf8
 XTRA_ADOC_OPTS :=
@@ -128,27 +137,32 @@ ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
 ASCIIDOCTOR_HTML := $(ENV) asciidoctor
 ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
 ASCIIDOCTOR_TAGS := $(ENV) asciidoctor --backend tags --require=./docs-resources/converters/tags.rb
-CREATE_NORM_RULE_TOOL := ruby docs-resources/tools/create_normative_rules.rb
+CREATE_NORM_RULE_TOOL := docs-resources/tools/create_normative_rules.py
+CREATE_NORM_RULE_PYTHON := python3 $(CREATE_NORM_RULE_TOOL)
 
-OPTIONS := --trace \
+OPTIONS_TAGS := --trace \
            -a compress \
-           -a mathematical-format=svg \
            -a pdf-fontsdir=docs-resources/fonts \
            -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
            $(WATERMARK_OPT) \
            -a revnumber='$(DATE)' \
+           -a monthyear='$(MONTHYEAR)' \
+           -a revcite='$(CITATION_DESCRIPTION)' \
            -a revremark='$(RELEASE_DESCRIPTION)' \
            -a docinfo=shared \
            $(XTRA_ADOC_OPTS) \
            -D build \
            --failure-level=WARN
+OPTIONS := $(OPTIONS_TAGS) \
+           -r ./src/lib/volume-xrefs.rb \
+           -r ./src/lib/macros.rb
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
             --require=asciidoctor-lists \
-            --require=asciidoctor-mathematical \
             --require=asciidoctor-sail
 
-.PHONY: all build clean build-docs build-pdf build-html build-epub build-tags build-norm-rules docker-pull-latest
+.PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub build-tags docker-pull-latest submodule-check
+.PHONY: build-norm-rules build-norm-rules-json build-norm-rules-html check-tags update-ref check-xref-fallbacks
 
 all: build
 
@@ -160,35 +174,65 @@ ifeq ("$(wildcard docs-resources/global-config.adoc)","")
 endif
 
 build-pdf: $(DOCS_PDF)
-build-html: $(DOCS_HTML) $(SAIL_HTML)
+build-html: $(DOCS_HTML) $(SAIL_HTML) check-xref-fallbacks
 build-epub: $(DOCS_EPUB)
 build-tags: $(DOCS_NORM_TAGS)
-build-norm-rules: $(NORM_RULES)
-build: build-pdf build-html build-epub build-tags build-norm-rules
+check-xrefs: $(addprefix $(BUILD_DIR)/, $(addsuffix .check-xrefs, $(DOCS)))
+check-xref-fallbacks: $(DOCS_HTML)
+	@python3 ./scripts/check_xref_fallbacks.py $(DOCS_HTML)
+check-tags:
+	@bash ./scripts/check-tag-changes.sh
 
-ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON)
+# Copy built normative tags JSON files to ref directory and use sed to ensure they end with a newline.
+# Required by GitHub pre-commit checks for this repo.
+update-ref: $(DOCS_NORM_TAGS)
+	cp -f $(DOCS_NORM_TAGS) ref
+	sed -i .bak -e '$$a\' ref/*.json
+	rm ref/*.bak
+
+build-norm-rules-json: $(NORM_RULES_JSON)
+build-norm-rules-html: $(NORM_RULES_HTML)
+build-norm-rules: build-norm-rules-json build-norm-rules-html check-tags
+build: build-pdf build-html build-epub build-tags build-norm-rules-json build-norm-rules-html
+
+ALL_SRCS := $(shell git ls-files $(SRC_DIR))  $(SAIL_ASCIIDOC_JSON)
+
+# All normative rule definition input YAML files.
+NORM_RULE_DEF_FILES := $(wildcard $(NORM_RULE_DEF_DIR)/*.yaml)
+
+# Add -t to each normative tag input filename and add prefix of "/" to make into absolute pathname.
+NORM_TAG_FILE_ARGS := $(foreach relative_pname,$(DOCS_NORM_TAGS),-t /$(relative_pname))
+
+# Add -d to each normative rule definition filename
+NORM_RULE_DEF_ARGS := $(foreach relative_pname,$(NORM_RULE_DEF_FILES),-d $(relative_pname))
+
+# Provide mapping from an ISA manual's norm tags JSON file to a URL that one can link to. Used to create links into ISA manual.
+NORM_RULE_DOC2URL_ARGS := $(foreach doc_name,$(DOCS),-tag2url /$(BUILD_DIR)/$(doc_name)$(DOC_NORM_TAG_SUFFIX) $(doc_name).html)
+
+# Temporarily make errors warnings. Don't check this in uncommented.
+# NORM_RULE_DEF_ARGS := $(NORM_RULE_DEF_ARGS) -w
 
 $(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS)
 	$(WORKDIR_SETUP)
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
-	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
+	@printf '\n  Built \033]8;;file://%s\033\\%s\033]8;;\033\\\n\n' "$(abspath $@)" "$@"
 
 $(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS)
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_HTML) $(OPTIONS) -a revremark='$(RELEASE_DESCRIPTION_HTML)' $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
-	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
+	@printf '\n  Built \033]8;;file://%s\033\\%s\033]8;;\033\\\n\n' "$(abspath $@)" "$@"
 
 $(BUILD_DIR)/%.epub: $(SRC_DIR)/%.adoc $(ALL_SRCS)
 	$(WORKDIR_SETUP)
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_EPUB) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
-	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
+	@printf '\n  Built \033]8;;file://%s\033\\%s\033]8;;\033\\\n\n' "$(abspath $@)" "$@"
 
 $(BUILD_DIR)/%-norm-tags.json: $(SRC_DIR)/%.adoc $(ALL_SRCS) docs-resources/converters/tags.rb
 	$(WORKDIR_SETUP)
-	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_TAGS) $(OPTIONS) -a tags-match-prefix='norm:' -a tags-output-suffix='-norm-tags.json' $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(UPDATE_ADOC_SAIL) $(ASCIIDOCTOR_TAGS) $(OPTIONS_TAGS) -a tags-match-prefix='norm:' -a tags-output-suffix='-norm-tags.json' $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 
 # Download the Sail JSON.
@@ -202,6 +246,25 @@ $(SAIL_HTML): $(SAIL_HTML_TGZ_URL_FILE)
 	@echo "Downloading Sail model HTML..."
 	mkdir -p $(BUILD_DIR)
 	@curl --location '$(shell cat $<)' | tar --extract --gzip --directory=$(BUILD_DIR)
+
+$(NORM_RULES_JSON): $(DOCS_NORM_TAGS) $(NORM_RULE_DEF_FILES) $(CREATE_NORM_RULE_TOOL)
+	$(WORKDIR_SETUP)
+	cp -f $(DOCS_NORM_TAGS) $@.workdir
+	mkdir -p $@.workdir/build
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(CREATE_NORM_RULE_PYTHON) -j $(NORM_TAG_FILE_ARGS) $(NORM_RULE_DEF_ARGS) $(NORM_RULE_DOC2URL_ARGS) $@ $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+$(NORM_RULES_HTML): $(DOCS_NORM_TAGS) $(NORM_RULE_DEF_FILES) $(CREATE_NORM_RULE_TOOL) $(DOCS_HTML)
+	$(WORKDIR_SETUP)
+	cp -f $(DOCS_NORM_TAGS) $@.workdir
+	mkdir -p $@.workdir/build
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(CREATE_NORM_RULE_PYTHON) --html $(NORM_TAG_FILE_ARGS) $(NORM_RULE_DEF_ARGS) $(NORM_RULE_DOC2URL_ARGS) $@ $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+$(BUILD_DIR)/%.check-xrefs: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+	$(WORKDIR_SETUP)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) -v $(OPTIONS) $(REQUIRES) $< 2>&1 | grep 'possible invalid reference' && exit 1 || [ $$? -eq 0 ] $(DOCKER_QUOTE)
+	@[ ! -f $@.workdir/$(BUILD_DIR)/$(notdir $*).html ] && exit 0 || python3 scripts/check_xref_fallbacks.py $@.workdir/$(BUILD_DIR)/$(notdir $*).html
 
 # Update docker image to latest
 docker-pull-latest:
